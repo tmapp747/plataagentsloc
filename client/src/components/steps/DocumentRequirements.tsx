@@ -142,6 +142,7 @@ const DocumentRequirements = ({
                   label={`${document.name} ${document.required ? "*" : "(Optional)"}`}
                   required={document.required}
                   onUploadComplete={() => handleUploadComplete(document.id)}
+                  showThumbnails={true}
                 />
                 <FormDescription>{document.description}</FormDescription>
               </div>

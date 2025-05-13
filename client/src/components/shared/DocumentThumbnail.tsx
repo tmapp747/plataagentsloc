@@ -64,9 +64,9 @@ const DocumentThumbnail = ({ document, onDelete, className }: DocumentThumbnailP
   
   // Generate thumbnail background based on document type
   const getThumbnailBackground = () => {
-    if (documentType?.startsWith('image/') && documentUrl) {
+    if ((mimeType?.startsWith('image/') || documentType?.startsWith('image/')) && fileUrl) {
       return {
-        backgroundImage: `url(${documentUrl})`,
+        backgroundImage: `url(${fileUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       };
@@ -92,7 +92,7 @@ const DocumentThumbnail = ({ document, onDelete, className }: DocumentThumbnailP
         className="flex-1 flex items-center justify-center"
         style={getThumbnailBackground()}
       >
-        {(!documentType?.startsWith('image/') || !documentUrl) && getDocumentIcon()}
+        {(!(mimeType?.startsWith('image/') || documentType?.startsWith('image/')) || !fileUrl) && getDocumentIcon()}
         
         {/* Preview overlay on hover */}
         <div className={cn(
@@ -100,10 +100,10 @@ const DocumentThumbnail = ({ document, onDelete, className }: DocumentThumbnailP
           isHovering ? "opacity-100" : "opacity-0"
         )}>
           <DocumentPreviewModal
-            documentId={document.documentId || String(id)}
-            documentName={originalName || 'Document'}
-            documentType={documentType || ''}
-            documentUrl={documentUrl || ''}
+            documentId={String(id)}
+            documentName={filename || 'Document'}
+            documentType={mimeType || documentType || ''}
+            documentUrl={fileUrl || ''}
             trigger={
               <Button variant="secondary" size="sm" className="text-xs px-2 py-1 h-7">
                 Preview
@@ -130,7 +130,7 @@ const DocumentThumbnail = ({ document, onDelete, className }: DocumentThumbnailP
       
       {/* File name footer */}
       <div className="p-1 bg-white text-xs text-center truncate border-t">
-        {formatFileName(originalName || 'Unknown file')}
+        {formatFileName(filename || 'Unknown file')}
       </div>
     </div>
   );

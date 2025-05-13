@@ -15,6 +15,7 @@ interface FileUploadProps {
   required?: boolean;
   maxSize?: number; // in MB
   onUploadComplete?: (documentId: number) => void;
+  showThumbnails?: boolean;
 }
 
 const FileUpload = ({
@@ -25,6 +26,7 @@ const FileUpload = ({
   required = false,
   maxSize = 5, // 5MB default
   onUploadComplete,
+  showThumbnails = true,
 }: FileUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -33,6 +35,12 @@ const FileUpload = ({
   const [uploadedDocument, setUploadedDocument] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  // Fetch existing documents for this document type
+  const { data: documents } = useQuery({
+    queryKey: [`/api/documents/${applicationId}`],
+    enabled: !!applicationId
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -139,6 +147,33 @@ const FileUpload = ({
       fileInputRef.current.value = "";
     }
   };
+  
+  // Filter documents for current document type
+  const typeDocuments = Array.isArray(documents) 
+    ? documents.filter(doc => doc.documentType === documentType)
+    : [];
+    
+  // Handle document delete
+  const handleDeleteDocument = async (docId: number) => {
+    try {
+      await apiRequest('DELETE', `/api/documents/${docId}`);
+      
+      // Invalidate documents query to refresh the list
+      queryClient.invalidateQueries({ queryKey: [`/api/documents/${applicationId}`] });
+      
+      toast({
+        title: "Document deleted",
+        description: "The document has been removed successfully."
+      });
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      toast({
+        title: "Delete failed",
+        description: "An error occurred while deleting the document.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -154,6 +189,19 @@ const FileUpload = ({
         )}
       </div>
       
+      {/* Document thumbnails */}
+      {showThumbnails && typeDocuments.length > 0 && (
+        <div className="flex flex-wrap gap-3 mb-4">
+          {typeDocuments.map(doc => (
+            <DocumentThumbnail 
+              key={doc.id} 
+              document={doc} 
+              onDelete={handleDeleteDocument}
+            />
+          ))}
+        </div>
+      )}
+      
       {/* Hidden file input */}
       <input
         type="file"
@@ -162,7 +210,7 @@ const FileUpload = ({
         onChange={handleFileChange}
         className="sr-only"
         ref={fileInputRef}
-        required={required && !uploadedDocument}
+        required={required && typeDocuments.length === 0 && !uploadedDocument}
       />
       
       {/* Preview area */}
