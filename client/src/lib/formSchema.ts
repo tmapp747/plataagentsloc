@@ -3,55 +3,57 @@ import { z } from "zod";
 // Business Packages (Based on official PlataPay franchise offerings - https://platapay.ph/franchise)
 export const businessPackages = [
   {
-    id: "basic",
-    name: "Basic Franchise",
-    description: "Entry-level franchise package for starting entrepreneurs",
-    monthlyFee: 3000,
-    setupFee: 15000,
+    id: "silver",
+    name: "Silver Package",
+    description: "Perfect for first-time entrepreneurs in growing communities",
+    monthlyFee: 3500,
+    setupFee: 20000,
     features: [
-      "Remittance services",
-      "Bills payment",
-      "E-loading",
-      "Basic financial services",
-      "POS terminal",
-      "Basic training",
-      "Customer service support"
+      "Remittance services (domestic & international)",
+      "Bills payment (utilities, loans, etc.)",
+      "E-loading for all networks",
+      "Basic cash-in/cash-out services",
+      "PlataPay POS device",
+      "Initial training program",
+      "Basic marketing materials",
+      "Standard customer support (9am-6pm)"
     ]
   },
   {
-    id: "standard",
-    name: "Standard Franchise",
-    description: "Complete solution for established businesses",
-    monthlyFee: 5000,
-    setupFee: 25000,
+    id: "gold",
+    name: "Gold Package",
+    description: "Ideal for established small businesses in urban locations",
+    monthlyFee: 6000,
+    setupFee: 35000,
     features: [
-      "All Basic franchise features",
+      "All Silver package features",
+      "Insurance product offerings",
       "Micro-lending services",
-      "Insurance products",
-      "Digital banking services",
-      "Enhanced signage package",
-      "Comprehensive training program",
-      "Marketing materials",
-      "Priority customer support"
+      "Advanced e-wallet integrations",
+      "Enhanced PlataPay signage",
+      "Comprehensive business training",
+      "Expanded marketing toolkit",
+      "Priority customer support (8am-8pm)",
+      "Monthly business review sessions"
     ]
   },
   {
-    id: "premium",
-    name: "Premium Franchise",
-    description: "Full-featured solution for serious entrepreneurs",
-    monthlyFee: 8000,
-    setupFee: 50000,
+    id: "platinum",
+    name: "Platinum Package",
+    description: "Premium solution for serious entrepreneurs in prime locations",
+    monthlyFee: 10000,
+    setupFee: 65000,
     features: [
-      "All Standard franchise features",
+      "All Gold package features",
       "Exclusive territorial rights",
-      "Expanded product offerings",
-      "Advanced financial services",
+      "Advanced financial product offerings",
       "Multiple POS terminals",
-      "Customized store design",
-      "Higher commission rates",
-      "Business development support",
-      "Premium marketing package",
-      "24/7 dedicated support"
+      "Custom store branding package",
+      "Premium commission rates (+2%)",
+      "Executive business development support",
+      "Complete marketing system",
+      "24/7 dedicated support hotline",
+      "Quarterly business strategy sessions"
     ]
   }
 ];

@@ -47,11 +47,16 @@ interface AIAssistantProps {
 }
 
 const supportedDialects = {
+  tagalog: 'Tagalog (Filipino)',
   english: 'English',
-  tagalog: 'Tagalog',
   cebuano: 'Cebuano (Bisaya)',
   ilocano: 'Ilocano',
-  bicolano: 'Bicolano'
+  bicolano: 'Bicolano',
+  hiligaynon: 'Hiligaynon (Ilonggo)',
+  waray: 'Waray',
+  kapampangan: 'Kapampangan',
+  pangasinan: 'Pangasinan',
+  chavacano: 'Chavacano'
 };
 
 const AIAssistant = ({ 
