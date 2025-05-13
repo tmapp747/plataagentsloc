@@ -20,6 +20,7 @@ import SignaturePad from "@/components/shared/SignaturePad";
 import { Application } from "@shared/schema";
 import { termsAndConditionsText } from "@/lib/formSchema";
 import StepAudio from "@/components/StepAudio";
+import { MessageSquare } from "lucide-react";
 
 type AgreementData = z.infer<typeof agreementSchema>;
 
@@ -102,6 +103,16 @@ const SignatureAgreement = ({
         <p className="text-sm font-medium text-blue-800">
           Please review the complete terms below, check the consent box, provide your signature, and click "Next" if you agree to these terms.
         </p>
+        
+        <div className="mt-4 pt-3 border-t border-blue-200 flex items-center gap-2">
+          <div className="bg-primary/10 rounded-full p-1.5">
+            <MessageSquare className="h-4 w-4 text-primary" />
+          </div>
+          <p className="text-sm text-blue-700">
+            <strong>Need help?</strong> If you have any questions or need clarification, click the help tab located on the right edge of the screen. 
+            The PlataPay CSR AI assistant (powered by advanced AI) is knowledgeable about PlataPay services and can answer your questions in multiple Philippine dialects.
+          </p>
+        </div>
       </div>
       <p className="text-sm text-gray-500 mb-6">
         Please review our terms and conditions carefully and sign to complete your application.
