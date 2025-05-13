@@ -1,0 +1,817 @@
+# PlataPay Agent Onboarding Platform - Project Documentation
+
+## 1. PRD (Product Requirements Document)
+
+### Overview
+The PlataPay Agent Onboarding Platform is a web application designed to streamline the recruitment and onboarding process for financial agents. The platform aims to collect comprehensive information from applicants, validate their identity and qualifications, and guide them through a structured application process.
+
+### Core Objectives
+- Simplify the agent application process
+- Ensure comprehensive data collection
+- Implement robust validation
+- Enable application resumption
+- Capture location data for agent distribution planning
+- Provide a review step for applicants
+- Support application submission
+
+### User Personas
+1. **Financial Agent Applicant**: Individuals applying to become PlataPay agents
+2. **Admin/Reviewer**: PlataPay staff who review and process applications
+
+### Key Features
+
+#### Multi-Step Application Form
+- Progressive form divided into logical sections
+- Save & continue functionality with QR code generation
+- Form validation at each step
+- Mobile-friendly interface
+
+#### Personal Information Collection
+- Basic personal details (name, contact info)
+- Identity verification
+- Background check information
+- Address and location details with map integration
+
+#### Business Information Collection
+- Business experience
+- Operating location
+- Package selection
+- Documentation uploads
+
+#### User Experience Enhancements
+- Progress indicators with estimated completion times
+- Ability to move back and forth between completed steps
+- Automatic location detection with manual override options
+- Duplicated field elimination (address consolidation)
+- Form summary/review page
+
+#### Technical Requirements
+- Secure data storage
+- Integration with PostgreSQL database
+- Webhook support for application processing
+- PDF generation for completed applications
+- Email notifications
+
+## 2. Wireframes & UI Specifications
+
+### Application Flow
+1. Welcome/Consent Screen
+2. Personal Information
+3. Background Check
+4. Business Information
+5. Location Details (Consolidated)
+6. Business Packages
+7. Document Uploads
+8. Signature & Agreement
+9. Review & Submit
+10. Confirmation Screen
+
+### UI Components
+- Navigation header with progress indicator
+- Form step navigation
+- Save & Continue component with QR code generator
+- Interactive map component for location selection
+- Package comparison cards
+- Document upload interface with preview
+- Digital signature pad
+- Form summary with edit capabilities
+
+### Design System
+- Color palette: Primary (#4A2A82 - PlataPay purple), complementary colors
+- Typography: Sans-serif, hierarchical sizing
+- Component library: Shadcn UI with Tailwind CSS
+- Iconography: Lucide React icons for actions and visual cues
+- Responsive breakpoints: Mobile, tablet, desktop
+
+## 3. Database Schema
+
+```typescript
+// User Schema
+const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  username: text('username').notNull().unique(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  role: text('role', { enum: ['applicant', 'admin', 'reviewer'] }).default('applicant').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Agent Application Schema
+const agentApplications = pgTable('agent_applications', {
+  id: serial('id').primaryKey(),
+  applicationId: text('application_id').notNull().unique(),
+  userId: integer('user_id').references(() => users.id),
+  status: text('status', {
+    enum: ['draft', 'submitted', 'under_review', 'approved', 'rejected']
+  }).default('draft').notNull(),
+  
+  // Personal Information
+  firstName: text('first_name').notNull(),
+  middleName: text('middle_name'),
+  lastName: text('last_name').notNull(),
+  dateOfBirth: timestamp('date_of_birth'),
+  gender: text('gender'),
+  nationality: text('nationality'),
+  email: text('email').notNull(),
+  phoneNumber: text('phone_number').notNull(),
+  mobileNumber: text('mobile_number'),
+  civilStatus: text('civil_status'),
+  idType: text('id_type'),
+  idNumber: text('id_number'),
+  
+  // Background Check Information
+  firstTimeApplying: text('first_time_applying'),
+  everCharged: text('ever_charged'),
+  declaredBankruptcy: text('declared_bankruptcy'),
+  bankrupytcyDetails: text('bankruptcy_details'),
+  incomeSource: text('income_source'),
+  
+  // Address - Home Address
+  address: jsonb('address').notNull(),
+  
+  // Business Information
+  businessName: text('business_name'),
+  businessType: text('business_type'),
+  businessNature: text('business_nature'),
+  yearsOperating: text('years_operating'),
+  dailyTransactions: text('daily_transactions'),
+  hasExistingBusiness: boolean('has_existing_business'),
+  isFirstTimeBusiness: boolean('is_first_time_business'),
+  
+  // Business Location (distinct from home address)
+  businessLocation: jsonb('business_location'),
+  businessLocationSameAsAddress: boolean('business_location_same_as_address'),
+  proposedLocation: text('proposed_location'),
+  latitude: numeric('latitude'),
+  longitude: numeric('longitude'),
+  landmark: text('landmark'),
+  
+  // Selected Package
+  packageType: text('package_type'),
+  monthlyFee: numeric('monthly_fee'),
+  setupFee: numeric('setup_fee'),
+  
+  // Documents
+  documentIds: text('document_ids').array(),
+  
+  // Agreement and Signature
+  termsAccepted: boolean('terms_accepted'),
+  signatureUrl: text('signature_url'),
+  
+  // Metadata
+  lastStep: integer('last_step').default(0),
+  submitDate: timestamp('submit_date'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Documents Schema
+const documents = pgTable('documents', {
+  id: serial('id').primaryKey(),
+  applicationId: integer('application_id').references(() => agentApplications.id),
+  documentType: text('document_type').notNull(),
+  filename: text('filename').notNull(),
+  fileUrl: text('file_url').notNull(),
+  mimeType: text('mime_type').notNull(),
+  fileSize: integer('file_size').notNull(),
+  uploadDate: timestamp('upload_date').defaultNow().notNull(),
+});
+
+// Application History Schema
+const applicationHistory = pgTable('application_history', {
+  id: serial('id').primaryKey(),
+  applicationId: integer('application_id').references(() => agentApplications.id),
+  action: text('action').notNull(),
+  status: text('status').notNull(),
+  comments: text('comments'),
+  performedBy: integer('performed_by').references(() => users.id),
+  timestamp: timestamp('timestamp').defaultNow().notNull(),
+});
+```
+
+## 4. API Blueprint
+
+### Authentication Endpoints
+- `POST /api/auth/register`: Register a new user
+- `POST /api/auth/login`: Login and get token
+- `POST /api/auth/logout`: Logout current user
+- `GET /api/auth/me`: Get current user profile
+
+### Application Endpoints
+- `POST /api/applications`: Create new application
+- `GET /api/applications/:id`: Get application by ID
+- `PATCH /api/applications/:id`: Update application (save progress)
+- `POST /api/applications/:id/submit`: Submit completed application
+- `GET /api/applications/:id/status`: Check application status
+- `GET /api/applications/qr/:token`: Resume application from QR code
+
+### Document Endpoints
+- `POST /api/documents`: Upload document
+- `GET /api/documents/:id`: Get document
+- `DELETE /api/documents/:id`: Delete document
+
+### Location Endpoints (for Address Dropdown Data)
+- `GET /api/regions`: Get all regions
+- `GET /api/provinces`: Get provinces by region
+- `GET /api/cities`: Get cities by province
+- `GET /api/municipalities`: Get municipalities by province
+- `GET /api/barangays`: Get barangays by city/municipality
+
+### Admin Endpoints
+- `GET /api/admin/applications`: List all applications with filters
+- `PATCH /api/admin/applications/:id/status`: Update application status
+- `GET /api/admin/reports/agents`: Generate agent distribution reports
+
+## 5. Component Architecture
+
+### Core Components
+- `<ApplicationForm>`: Main container component
+- `<FormProgress>`: Shows steps and progress
+- `<FormNavigation>`: Prev/Next/Submit buttons
+- `<FormSaveContinue>`: Save & resume with QR code
+- `<FormValidationSummary>`: Displays validation errors
+
+### Form Step Components
+- `<PersonalInfo>`: Personal information fields
+- `<BackgroundCheck>`: Background check questions
+- `<BusinessExperience>`: Business experience fields
+- `<ConsolidatedLocationForm>`: Handles both home and business locations
+- `<BusinessPackages>`: Package selection with pricing
+- `<Requirements>`: Document upload interface
+- `<SignatureAndAgreement>`: Terms and signature pad
+- `<FormSummary>`: Review all entered information
+
+### Shared UI Components
+- `<AddressFormField>`: Address inputs with validation
+- `<FormattedInput>`: Special format fields (phone, ID, etc.)
+- `<MapComponent>`: Location selection on map
+- `<FileUpload>`: Document upload with preview
+
+## 6. Development Guidelines
+
+### Frontend
+- Use React with TypeScript
+- State management with React Hook Form
+- Form validation with Zod
+- UI components from Shadcn UI + Tailwind CSS
+- Location visualization with Leaflet maps
+
+### Backend
+- Express.js server
+- PostgreSQL database with Drizzle ORM
+- Type-sharing between frontend and backend
+- Secure JWT authentication
+- File storage with proper access controls
+
+### Deployment
+- Environment configuration for development/staging/production
+- Database migration strategy
+- CI/CD pipeline configuration
+- Monitoring and error tracking
+
+## 7. Testing Strategy
+
+### Unit Testing
+- Component testing with React Testing Library
+- Form validation tests
+- API client tests
+
+### Integration Testing
+- Form submission flows
+- API integration tests
+- Database interaction tests
+
+### End-to-End Testing
+- Complete application submission flow
+- Save and resume functionality
+- Cross-browser compatibility
+
+## 8. Key Implementation Features
+
+### Save & Continue Functionality
+- Local storage-based persistence
+- QR code generation for cross-device resumption
+- Auto-save on step transitions
+- Manual save option with visual feedback
+
+### Location Consolidation
+- Combined home address and business location steps
+- "Same as home address" toggle to reduce duplicate data entry
+- Shared map view showing both locations
+- Location coordinate auto-detection with manual override
+
+### Form Data Validation
+- Field-level validation with visual feedback
+- Step-level validation summaries
+- Cross-field validation rules
+- Contextual help text for complex fields
+
+### Package Selection
+- Visual comparison of package offerings
+- Pricing information clearly displayed
+- Feature comparison matrix
+- Filtering based on business type
+
+### Document Requirements
+- Document type identification
+- File upload with preview functionality
+- Validation for file types and sizes
+- Required vs optional document indicators
+
+## 9. Map Integration Features
+
+### Interactive Map Component
+- Built with Leaflet.js for lightweight performance
+- Fully responsive map view with custom markers
+- Support for both desktop and mobile interactions
+- Custom map styles to match application theme
+
+### Location Services
+- Auto-detection of user's current location (with permission)
+- Reverse geocoding to populate address fields from map selection
+- Ability to search for locations by address
+- Multiple marker support for comparing home and business locations
+
+### Detailed Address Capture
+- Hierarchical address selection (Region → Province → City/Municipality → Barangay)
+- Street address and landmark inputs
+- Validation of coordinates against administrative boundaries
+- Coordinate format standardization (latitude/longitude)
+
+### User Experience Considerations
+- Fallback coordinates for areas with poor GPS accuracy
+- Visual indicators for location precision
+- Graceful handling of location permission denials
+- Optimized map loading for low-bandwidth connections
+
+## 10. Embeddable Form Options
+
+### Integration Capabilities
+- Embeddable via iframe with customizable parameters
+- JavaScript SDK for deeper website integration
+- API tokens for authenticated embedding
+- Postmessage communication between parent site and embedded form
+
+### Customization Parameters
+- Theme customization (colors, typography, spacing)
+- Initial step configuration
+- Form field prefilling via URL parameters
+- Custom success/error redirects
+
+### Embed Code Generator
+- Visual tool for generating embed codes
+- Preview functionality before implementation
+- Configuration options for responsive behavior
+- Auto-sizing iframe options
+
+### Multi-platform Support
+- Responsive design adaptable to container size
+- Mobile-optimized embedded views
+- Accessibility compliance in embedded mode
+- Consistent experience across embedding contexts
+
+## 11. AI Assistant with Voice Guidance
+
+### Interactive AI Guide
+- OpenAI GPT-4o powered conversational assistant
+- Context-aware help based on current form step
+- Ability to answer common questions about the application process
+- Personalized guidance based on previously entered information
+
+### Voice Interaction Capabilities
+- Text-to-speech using natural-sounding voices
+- Voice input for hands-free interaction
+- Support for multiple languages and dialects
+- Voice command recognition for form navigation
+
+### Implementation Details
+- Web Speech API integration for browser compatibility
+- Streaming responses for immediate feedback
+- Wake word functionality for voice activation
+- Background noise filtering and voice clarity enhancements
+
+### User Experience Features
+- Visual avatar representation of the assistant
+- Animated indicators during voice processing
+- Transcript display with highlighting
+- Adjustable voice parameters (speed, pitch, volume)
+- Option to disable or enable voice features
+
+### Privacy and Security
+- On-device processing where possible
+- Clear consent flow for microphone access
+- Voice data handling compliant with privacy regulations
+- Configurable data retention policies
+
+## 12. AI Assistant Implementation Guidelines
+
+### Technical Implementation
+
+#### OpenAI Integration
+```typescript
+// openai.ts
+import OpenAI from "openai";
+
+// the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+// do not change this unless explicitly requested by the user
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+export async function getAssistantResponse(
+  message: string,
+  formContext: FormContext
+): Promise<string> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful assistant for the PlataPay Agent Application process. 
+          Current form step: ${formContext.currentStep} - ${formContext.stepTitle}
+          Be concise, friendly, and focus on helping the user complete their application.
+          Use simple, non-technical language.`
+        },
+        { role: "user", content: message }
+      ],
+      max_tokens: 150,
+    });
+
+    return response.choices[0].message.content || "I'm sorry, I couldn't process that.";
+  } catch (error) {
+    console.error("Error getting assistant response:", error);
+    return "I'm experiencing technical difficulties. Please try again later.";
+  }
+}
+```
+
+#### Voice Integration
+```typescript
+// voice-service.ts
+interface VoiceOptions {
+  voice: string;
+  rate: number;
+  pitch: number;
+  volume: number;
+}
+
+export class VoiceService {
+  private synthesis: SpeechSynthesis;
+  private recognition: any; // SpeechRecognition or webkitSpeechRecognition
+  private options: VoiceOptions;
+  private isListening: boolean = false;
+  private onTranscriptCallback: (text: string) => void;
+  
+  constructor(options: Partial<VoiceOptions> = {}) {
+    this.synthesis = window.speechSynthesis;
+    this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    this.options = {
+      voice: options.voice || 'en-US-Neural2-C', // Default modern voice
+      rate: options.rate || 1,
+      pitch: options.pitch || 1,
+      volume: options.volume || 1
+    };
+    
+    this.setupRecognition();
+  }
+  
+  private setupRecognition() {
+    this.recognition.continuous = true;
+    this.recognition.interimResults = true;
+    this.recognition.lang = 'en-US';
+    
+    this.recognition.onresult = (event: any) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      
+      if (finalTranscript && this.onTranscriptCallback) {
+        this.onTranscriptCallback(finalTranscript);
+      }
+    };
+  }
+  
+  public speak(text: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.synthesis) {
+        reject(new Error('Speech synthesis not supported'));
+        return;
+      }
+      
+      // Cancel any ongoing speech
+      this.synthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = this.getVoice();
+      utterance.rate = this.options.rate;
+      utterance.pitch = this.options.pitch;
+      utterance.volume = this.options.volume;
+      
+      utterance.onend = () => resolve();
+      utterance.onerror = (err) => reject(err);
+      
+      this.synthesis.speak(utterance);
+    });
+  }
+  
+  public startListening(callback: (text: string) => void) {
+    if (!this.recognition) {
+      throw new Error('Speech recognition not supported');
+    }
+    
+    this.onTranscriptCallback = callback;
+    this.isListening = true;
+    this.recognition.start();
+  }
+  
+  public stopListening() {
+    if (this.isListening && this.recognition) {
+      this.isListening = false;
+      this.recognition.stop();
+    }
+  }
+  
+  private getVoice() {
+    const voices = this.synthesis.getVoices();
+    return voices.find(voice => voice.name === this.options.voice) || voices[0];
+  }
+  
+  public setOptions(options: Partial<VoiceOptions>) {
+    this.options = { ...this.options, ...options };
+  }
+}
+```
+
+#### React Component
+```tsx
+// ai-assistant.tsx
+import React, { useState, useEffect, useRef } from 'react';
+import { getAssistantResponse } from '../services/openai';
+import { VoiceService } from '../services/voice-service';
+import { useFormContext } from 'react-hook-form';
+import { Button, Card, Avatar, Textarea } from '../ui/components';
+import { Mic, MicOff, User, Bot, Volume2, Volume1, VolumeX } from 'lucide-react';
+
+interface AIAssistantProps {
+  currentStep: number;
+  stepTitle: string;
+}
+
+export default function AIAssistant({ currentStep, stepTitle }: AIAssistantProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [message, setMessage] = useState('');
+  const [conversation, setConversation] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
+  
+  const voiceService = useRef<VoiceService | null>(null);
+  const form = useFormContext();
+  
+  // Initialize voice service
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      voiceService.current = new VoiceService();
+    }
+    
+    return () => {
+      if (voiceService.current) {
+        voiceService.current.stopListening();
+      }
+    };
+  }, []);
+  
+  // Handle transcript from voice recognition
+  const handleTranscript = (text: string) => {
+    setMessage(prev => prev + ' ' + text);
+  };
+  
+  // Toggle listening state
+  const toggleListening = () => {
+    if (isListening) {
+      voiceService.current?.stopListening();
+      setIsListening(false);
+    } else {
+      voiceService.current?.startListening(handleTranscript);
+      setIsListening(true);
+    }
+  };
+  
+  // Send message to AI
+  const sendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+    
+    // Add user message to conversation
+    const userMessage = { role: 'user' as const, content: message };
+    setConversation(prev => [...prev, userMessage]);
+    setIsLoading(true);
+    
+    try {
+      // Get form context for the assistant
+      const formContext = {
+        currentStep,
+        stepTitle,
+        formData: form.getValues(),
+      };
+      
+      // Get response from OpenAI
+      const response = await getAssistantResponse(message, formContext);
+      
+      // Add assistant response to conversation
+      const assistantMessage = { role: 'assistant' as const, content: response };
+      setConversation(prev => [...prev, assistantMessage]);
+      
+      // Speak the response if voice is enabled
+      if (voiceEnabled && voiceService.current) {
+        setIsSpeaking(true);
+        await voiceService.current.speak(response);
+        setIsSpeaking(false);
+      }
+    } catch (error) {
+      console.error('Error in AI response:', error);
+    } finally {
+      setIsLoading(false);
+      setMessage('');
+    }
+  };
+  
+  return (
+    <div className="ai-assistant-container">
+      <Button
+        onClick={() => setIsOpen(!isOpen)}
+        className="ai-assistant-toggle"
+        aria-label="Toggle AI Assistant"
+      >
+        <Bot size={24} />
+      </Button>
+      
+      {isOpen && (
+        <Card className="ai-assistant-dialog">
+          <div className="ai-assistant-header">
+            <h3>PlataPay Assistant</h3>
+            <div className="ai-assistant-controls">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+              >
+                {voiceEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsOpen(false)}
+              >
+                ✕
+              </Button>
+            </div>
+          </div>
+          
+          <div className="ai-assistant-conversation">
+            {conversation.length === 0 ? (
+              <div className="ai-assistant-welcome">
+                <p>Hello! I'm your PlataPay application assistant. How can I help you with your application?</p>
+              </div>
+            ) : (
+              conversation.map((msg, index) => (
+                <div 
+                  key={index} 
+                  className={`ai-message ${msg.role === 'user' ? 'user-message' : 'assistant-message'}`}
+                >
+                  <div className="message-avatar">
+                    {msg.role === 'user' ? <User size={24} /> : <Bot size={24} />}
+                  </div>
+                  <div className="message-content">
+                    {msg.content}
+                  </div>
+                </div>
+              ))
+            )}
+            
+            {isLoading && (
+              <div className="ai-typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            )}
+          </div>
+          
+          <div className="ai-assistant-input">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your question here..."
+              className="ai-input"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+            />
+            <div className="ai-input-buttons">
+              <Button
+                variant={isListening ? "destructive" : "secondary"}
+                size="sm"
+                onClick={toggleListening}
+                title={isListening ? "Stop listening" : "Start voice input"}
+              >
+                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+              </Button>
+              <Button 
+                onClick={sendMessage} 
+                disabled={!message.trim() || isLoading}
+              >
+                Send
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+```
+
+### Context-Aware Assistance
+
+The AI assistant should be designed to offer help based on the current form step. For each step of the form, create a context-specific prompt template that guides the AI to provide relevant assistance:
+
+```typescript
+const stepContextPrompts = {
+  'personal-info': `You're helping with the Personal Information section. 
+    Offer guidance on entering correct name formats, valid email addresses, 
+    and phone number formats. If users ask about why we need this information, 
+    explain it's for verification purposes and communication.`,
+  
+  'background-check': `You're helping with the Background Check section.
+    Reassure users that honest answers are important and explain the verification process.
+    If asked about bankruptcy or legal issues, explain these don't automatically disqualify 
+    them but need to be disclosed for proper review.`,
+  
+  'location': `You're helping with the Location Details section.
+    Explain that we need both home address and business location for verification
+    and planning purposes. Assist with using the map, and explain that clicking
+    on the map will automatically fill the coordinates fields.`,
+  
+  // Additional context templates for other steps
+};
+```
+
+### Voice Guidance Scripts
+
+Prepare pre-recorded or synthesized voice guidance for key application steps:
+
+1. **Welcome Message:**
+   ```
+   "Welcome to the PlataPay Agent Application. I'm here to guide you through the process. You can ask me questions at any time, or click the microphone to speak directly to me. Let's get started with your application!"
+   ```
+
+2. **Personal Information Step:**
+   ```
+   "In this section, we'll collect your basic personal information. Please enter your full name, contact details, and identification information. All fields marked with an asterisk are required."
+   ```
+
+3. **Location Step:**
+   ```
+   "Now let's add your address details. You can enter your home address first, and if your business location is the same, simply check the 'Same as home address' box. You can also use the map to pinpoint exact locations."
+   ```
+
+4. **Error Resolution:**
+   ```
+   "I've noticed some fields need your attention. Required fields must be completed before moving to the next step. I can help you resolve any issues - just ask about the specific field you're having trouble with."
+   ```
+
+5. **Successful Completion:**
+   ```
+   "Great job! You've successfully completed this section. You can review your information before moving to the next step. Would you like me to explain anything about what you've entered?"
+   ```
+
+### Design Considerations
+
+- **Minimize Interruptions:** Voice guidance should not interrupt the user's workflow
+- **Contextual Activation:** Voice prompts should be triggered by specific events (new section, errors, help requested)
+- **Visual Indicators:** Always provide visual cues when voice is active
+- **Control Options:** Easily accessible controls to mute, adjust volume, or disable the voice assistant
+- **Transcript Available:** Always provide text transcripts of voice guidance for accessibility
+
+### Localization Strategy
+
+Prepare voice assets and AI assistant interactions in multiple languages:
+
+1. **Base Languages:** English (Philippines), Filipino/Tagalog
+2. **Secondary Languages:** Regional Filipino dialects, Chinese (for certain regions)
+
+For each supported language, create:
+- Voice samples for natural text-to-speech
+- Localized prompt templates for the AI assistant
+- Language-specific validation error messages and guidance
