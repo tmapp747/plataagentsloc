@@ -59,7 +59,10 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
     <div className="p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Welcome to PlataPay Agent Onboarding</h2>
       
-      <WelcomeAudio name={application?.firstName || ''} />
+      <WelcomeAudio 
+        name={application?.firstName || ''} 
+        voiceSettings={voiceSettings}
+      />
       
       <div className="mb-4">
         <VoiceSettings onVoiceSettingsChange={handleVoiceSettingsChange} />

@@ -1,68 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTextToSpeech } from '@/hooks/useVoiceApi';
+import { VoiceSettings } from './VoiceSettings';
 
 interface WelcomeAudioProps {
   name?: string;
+  voiceSettings?: VoiceSettings;
 }
 
-const WelcomeAudio = ({ name = '' }: WelcomeAudioProps) => {
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+const WelcomeAudio = ({ name = '', voiceSettings }: WelcomeAudioProps) => {
+  const { play, stop, isPlaying, isLoading } = useTextToSpeech();
   
-  useEffect(() => {
-    // Create audio element
-    const audioElement = new Audio();
-    audioElement.addEventListener('ended', () => setIsPlaying(false));
-    setAudio(audioElement);
-    
-    // Clean up on unmount
-    return () => {
-      if (audioElement) {
-        audioElement.pause();
-        audioElement.src = '';
-        audioElement.removeEventListener('ended', () => setIsPlaying(false));
-      }
-    };
-  }, []);
-  
-  const fetchWelcomeAudio = async () => {
-    if (loading) return;
-    
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/welcome-message?name=${encodeURIComponent(name)}`);
-      const data = await response.json();
-      
-      if (data.audioUrl) {
-        setAudioUrl(data.audioUrl);
-        if (audio) {
-          audio.src = data.audioUrl;
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching welcome audio:', error);
-    } finally {
-      setLoading(false);
-    }
+  // Welcome message with personalization
+  const getWelcomeMessage = () => {
+    const userName = name ? name : 'applicant';
+    return `Hello ${userName}, welcome to the PlataPay Agent Onboarding Platform. I'm Madam Lyn, and I'll guide you through your application process. Let's get started!`;
   };
   
   const togglePlayPause = () => {
-    if (!audio || !audioUrl) {
-      fetchWelcomeAudio();
-      return;
-    }
-    
     if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
+      stop();
     } else {
-      audio.play().catch(err => {
-        console.error('Error playing audio:', err);
+      play(getWelcomeMessage(), {
+        stability: voiceSettings?.stability,
+        similarity_boost: voiceSettings?.similarityBoost,
+        style: voiceSettings?.style,
+        use_speaker_boost: voiceSettings?.useSpeakerBoost
       });
-      setIsPlaying(true);
     }
   };
   
@@ -72,10 +37,10 @@ const WelcomeAudio = ({ name = '' }: WelcomeAudioProps) => {
         variant="outline" 
         size="icon" 
         onClick={togglePlayPause}
-        disabled={loading}
+        disabled={isLoading}
         className="rounded-full"
       >
-        {loading ? (
+        {isLoading ? (
           <span className="animate-spin">⏳</span>
         ) : isPlaying ? (
           <Pause className="h-4 w-4" />

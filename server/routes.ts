@@ -8,6 +8,14 @@ import path from "path";
 import fs from "fs";
 import { insertApplicationSchema, insertDocumentSchema } from "@shared/schema";
 import { elevenlabsService } from "./services/elevenlabs";
+import { db } from "./db";
+import { count, eq, ne, desc } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { 
+  agentApplications, 
+  regions, 
+  provinces
+} from "@shared/schema";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -317,6 +325,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error generating welcome message:', error);
       return res.status(500).json({ message: 'Failed to generate welcome message' });
+    }
+  });
+  
+  // Admin API endpoints
+  app.get('/api/admin/statistics', async (req: Request, res: Response) => {
+    try {
+      const [totalApplications] = await db
+        .select({ count: count() })
+        .from(agentApplications);
+        
+      const [totalSubmitted] = await db
+        .select({ count: count() })
+        .from(agentApplications)
+        .where(eq(agentApplications.status, 'submitted'));
+        
+      const [totalDrafts] = await db
+        .select({ count: count() })
+        .from(agentApplications)
+        .where(eq(agentApplications.status, 'draft'));
+        
+      const [totalApproved] = await db
+        .select({ count: count() })
+        .from(agentApplications)
+        .where(eq(agentApplications.status, 'approved'));
+        
+      const [totalRejected] = await db
+        .select({ count: count() })
+        .from(agentApplications)
+        .where(eq(agentApplications.status, 'rejected'));
+        
+      const [totalUnderReview] = await db
+        .select({ count: count() })
+        .from(agentApplications)
+        .where(eq(agentApplications.status, 'under_review'));
+      
+      // Get application counts by region
+      const regionStats = await db
+        .select({
+          regionName: regions.name,
+          count: count(),
+        })
+        .from(agentApplications)
+        .innerJoin(provinces, eq(
+          sql`${agentApplications.address}->>'province'`, 
+          provinces.name
+        ))
+        .innerJoin(regions, eq(provinces.regionId, regions.id))
+        .where(ne(agentApplications.status, 'draft'))
+        .groupBy(regions.name)
+        .orderBy(desc(count()));
+      
+      return res.json({
+        applications: {
+          total: totalApplications.count,
+          submitted: totalSubmitted.count,
+          draft: totalDrafts.count,
+          approved: totalApproved.count,
+          rejected: totalRejected.count,
+          underReview: totalUnderReview.count
+        },
+        regions: regionStats
+      });
+    } catch (error) {
+      console.error('Error fetching admin statistics:', error);
+      return res.status(500).json({ message: 'Failed to fetch statistics' });
     }
   });
 
