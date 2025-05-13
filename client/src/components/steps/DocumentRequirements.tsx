@@ -55,7 +55,7 @@ const DocumentRequirements = ({
   });
 
   useEffect(() => {
-    if (documents) {
+    if (documents && Array.isArray(documents)) {
       const uploaded: Record<string, boolean> = {};
       documents.forEach((doc: any) => {
         uploaded[doc.documentType] = true;
