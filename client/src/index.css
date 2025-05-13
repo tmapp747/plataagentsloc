@@ -3,48 +3,51 @@
 @tailwind utilities;
 
 :root {
+  /* PlataPay official branding colors */
   --background: 0 0% 100%;
-  --foreground: 20 14.3% 4.1%;
-  --muted: 60 4.8% 95.9%;
-  --muted-foreground: 25 5.3% 44.7%;
+  --foreground: 271 70% 15%; /* Deep purple for text */
+  --muted: 271 15% 95%;
+  --muted-foreground: 271 30% 40%;
   --popover: 0 0% 100%;
-  --popover-foreground: 20 14.3% 4.1%;
+  --popover-foreground: 271 70% 15%;
   --card: 0 0% 100%;
-  --card-foreground: 20 14.3% 4.1%;
-  --border: 20 5.9% 90%;
-  --input: 20 5.9% 90%;
-  --primary: 271 51% 34%; /* PlataPay purple #4A2A82 */
+  --card-foreground: 271 70% 15%;
+  --border: 271 15% 90%;
+  --input: 271 15% 90%;
+  --primary: 271 51% 34%; /* PlataPay main purple #4A2A82 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 60 4.8% 95.9%;
-  --secondary-foreground: 24 9.8% 10%;
-  --accent: 271 100% 90%; /* Light purple accent */
-  --accent-foreground: 271 51% 34%;
+  --secondary: 255 75% 55%; /* PlataPay blue accent */
+  --secondary-foreground: 0 0% 100%;
+  --accent: 27 100% 50%; /* PlataPay orange accent #FF9900 */
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 60 9.1% 97.8%;
   --ring: 271 51% 34%;
   --radius: 0.5rem;
+  --success: 142 76% 36%; /* PlataPay success green */
 }
 
 .dark {
-  --background: 20 14.3% 4.1%;
-  --foreground: 60 9.1% 97.8%;
-  --muted: 12 6.5% 15.1%;
-  --muted-foreground: 24 5.4% 63.9%;
-  --popover: 20 14.3% 4.1%;
-  --popover-foreground: 60 9.1% 97.8%;
-  --card: 20 14.3% 4.1%;
-  --card-foreground: 60 9.1% 97.8%;
-  --border: 12 6.5% 15.1%;
-  --input: 12 6.5% 15.1%;
-  --primary: 271 51% 34%;
+  --background: 271 70% 4%;
+  --foreground: 271 10% 95%;
+  --muted: 271 50% 10%;
+  --muted-foreground: 271 30% 70%;
+  --popover: 271 70% 4%;
+  --popover-foreground: 271 10% 95%; 
+  --card: 271 70% 4%;
+  --card-foreground: 271 10% 95%;
+  --border: 271 50% 15%;
+  --input: 271 50% 15%;
+  --primary: 271 51% 50%; /* Brighter in dark mode */
   --primary-foreground: 0 0% 100%;
-  --secondary: 12 6.5% 15.1%;
-  --secondary-foreground: 60 9.1% 97.8%;
-  --accent: 271 100% 90%;
-  --accent-foreground: 271 51% 34%;
+  --secondary: 255 75% 60%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 27 100% 55%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 60 9.1% 97.8%;
-  --ring: 271 51% 34%;
+  --ring: 271 51% 50%;
+  --success: 142 76% 45%;
 }
 
 @layer base {
@@ -53,7 +56,7 @@
   }
 
   body {
-    @apply font-sans antialiased bg-gray-50 text-foreground;
+    @apply font-sans antialiased bg-muted text-foreground;
   }
 }
 

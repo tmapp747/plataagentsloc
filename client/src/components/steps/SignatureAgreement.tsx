@@ -117,7 +117,7 @@ const SignatureAgreement = ({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    I have read and agree to the Terms and Conditions *
+                    I have read and agree to the <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Terms and Conditions</a> and <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Privacy Policy</a> *
                   </FormLabel>
                   <FormMessage />
                 </div>

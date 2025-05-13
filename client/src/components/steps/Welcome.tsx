@@ -95,7 +95,9 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
         <h3 className="text-lg font-medium mt-6 mb-2">Privacy Notice</h3>
         <p className="text-sm">
           PlataPay values your privacy and will handle your information in accordance with our 
-          Privacy Policy. The information collected through this application will be used for 
+          <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline"> 
+            Privacy Policy
+          </a>. The information collected through this application will be used for 
           the purposes of evaluating your eligibility to become a PlataPay financial agent.
         </p>
       </div>
@@ -115,7 +117,7 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    I have read and accept the Terms & Conditions and Privacy Policy
+                    I have read and accept the <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Terms & Conditions</a> and <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Privacy Policy</a>
                   </FormLabel>
                   <FormDescription>
                     You must agree to continue with the application process
