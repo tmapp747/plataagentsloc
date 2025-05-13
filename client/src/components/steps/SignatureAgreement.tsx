@@ -19,6 +19,7 @@ import FormValidationSummary from "@/components/FormValidationSummary";
 import SignaturePad from "@/components/shared/SignaturePad";
 import { Application } from "@shared/schema";
 import { termsAndConditionsText } from "@/lib/formSchema";
+import StepAudio from "@/components/StepAudio";
 
 type AgreementData = z.infer<typeof agreementSchema>;
 
@@ -84,9 +85,26 @@ const SignatureAgreement = ({
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Agreement & Signature</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Agreement & Signature</h2>
+      <StepAudio step="signature" autoPlay={true} />
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+        <h3 className="text-base font-medium text-blue-800 mb-2">Important Information About This Agreement</h3>
+        <p className="text-sm text-blue-700 mb-2">
+          By accepting this agreement, you are:
+        </p>
+        <ul className="list-disc text-sm text-blue-700 ml-5 space-y-1 mb-2">
+          <li>Confirming that all information provided in your application is accurate and truthful</li>
+          <li>Consenting to background checks and verification of your personal and business information</li>
+          <li>Agreeing to comply with PlataPay's agent policies, procedures, and code of conduct</li>
+          <li>Authorizing PlataPay to contact you regarding your application status and other relevant matters</li>
+          <li>Accepting the financial obligations outlined in your selected package</li>
+        </ul>
+        <p className="text-sm font-medium text-blue-800">
+          Please review the complete terms below, check the consent box, provide your signature, and click "Next" if you agree to these terms.
+        </p>
+      </div>
       <p className="text-sm text-gray-500 mb-6">
-        Please review our terms and conditions and sign to complete your application.
+        Please review our terms and conditions carefully and sign to complete your application.
       </p>
 
       <FormSaveContinue resumeUrl={resumeUrl} onSave={handleSave} />
@@ -116,9 +134,12 @@ const SignatureAgreement = ({
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    I have read and agree to the <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Terms and Conditions</a> and <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Privacy Policy</a> *
+                  <FormLabel className="font-medium">
+                    I confirm that I have read, understood, and agree to the <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Terms and Conditions</a> and <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Privacy Policy</a> for the PlataPay Agent Program. I understand my rights and responsibilities as outlined above. *
                   </FormLabel>
+                  <p className="text-sm text-gray-500 mt-1">
+                    By checking this box and clicking "Next", you are electronically signing and agreeing to be bound by the terms of this agreement.
+                  </p>
                   <FormMessage />
                 </div>
               </FormItem>
@@ -148,11 +169,27 @@ const SignatureAgreement = ({
             successMessage="Agreement accepted and signature provided. You can proceed to review your application."
           />
 
-          <FormNavigation
-            onPrevious={onPrevious}
-            isSubmitting={isLoading}
-            disableNext={!validationSuccess}
-          />
+          <div className="mt-8">
+            {!validationSuccess && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
+                <p className="text-sm text-amber-700">
+                  <strong>Important:</strong> To proceed, please check the consent box above and provide your signature.
+                </p>
+              </div>
+            )}
+            {validationSuccess && (
+              <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
+                <p className="text-sm text-green-700">
+                  <strong>Thank you!</strong> Please click "Next" to continue with your application.
+                </p>
+              </div>
+            )}
+            <FormNavigation
+              onPrevious={onPrevious}
+              isSubmitting={isLoading}
+              disableNext={!validationSuccess}
+            />
+          </div>
         </form>
       </Form>
     </div>
