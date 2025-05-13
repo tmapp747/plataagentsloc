@@ -17,6 +17,7 @@ import SignatureAgreement from "./steps/SignatureAgreement";
 import FormSummary from "./steps/FormSummary";
 import Confirmation from "./steps/Confirmation";
 import { Skeleton } from "@/components/ui/skeleton";
+import AIAssistant from "./AIAssistant";
 
 const steps = [
   { id: 0, name: "Welcome", component: Welcome },
