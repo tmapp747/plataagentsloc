@@ -1,8 +1,9 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FieldErrors } from "react-hook-form";
 
 interface FormValidationSummaryProps {
-  errors?: Record<string, string[]>;
+  errors?: FieldErrors<any> | Record<string, string[]>;
   success?: boolean;
   successMessage?: string;
 }
@@ -40,13 +41,22 @@ const FormValidationSummary = ({
           {hasErrors && (
             <div className="mt-2 text-sm text-red-700">
               <ul className="list-disc pl-5 space-y-1">
-                {Object.entries(errors).flatMap(([field, messages]) => {
-                  // Ensure messages is always an array
-                  const messageArray = Array.isArray(messages) ? messages : [messages];
+                {Object.entries(errors).flatMap(([field, error]) => {
+                  // Handle different error formats (FieldError or string[])
+                  if (typeof error === 'object' && error !== null) {
+                    if (Array.isArray(error)) {
+                      // It's already a string array
+                      return error.map((message, index) => (
+                        <li key={`${field}-${index}`}>{message}</li>
+                      ));
+                    } else if (error.message) {
+                      // It's a FieldError with a message property
+                      return [<li key={`${field}-0`}>{`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${error.message}`}</li>];
+                    }
+                  }
                   
-                  return messageArray.map((message, index) => (
-                    <li key={`${field}-${index}`}>{message}</li>
-                  ));
+                  // Fallback for any other format
+                  return [<li key={`${field}-0`}>{`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is invalid`}</li>];
                 })}
               </ul>
             </div>
