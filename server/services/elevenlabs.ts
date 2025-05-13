@@ -6,8 +6,9 @@ import { nanoid } from 'nanoid';
 
 const writeFileAsync = promisify(fs.writeFile);
 
-// Default ElevenLabs voice ID (changing to a standard voice)
-const MADAM_LYN_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL'; // "Rachel" voice ID
+// Default ElevenLabs voice ID
+// Using "Rachel" voice ID which is a standard ElevenLabs voice
+const MADAM_LYN_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL';
 
 const audioDir = path.join(process.cwd(), 'uploads', 'audio');
 if (!fs.existsSync(audioDir)) {
@@ -50,41 +51,59 @@ export class ElevenLabsService {
       use_speaker_boost = true
     } = options;
 
-    const url = `${this.baseUrl}/text-to-speech/${voice_id}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'audio/mpeg',
-        'Content-Type': 'application/json',
-        'xi-api-key': this.apiKey
-      },
-      body: JSON.stringify({
-        text,
-        model_id,
-        voice_settings: {
-          stability,
-          similarity_boost,
-          style,
-          use_speaker_boost
-        }
-      })
-    });
+    try {
+      console.log(`Sending TTS request to ElevenLabs API for text: "${text.substring(0, 50)}..."`);
+      
+      const url = `${this.baseUrl}/text-to-speech/${voice_id}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': this.apiKey
+        },
+        body: JSON.stringify({
+          text,
+          model_id,
+          voice_settings: {
+            stability,
+            similarity_boost,
+            style,
+            use_speaker_boost
+          }
+        })
+      });
+      
+      // Log API response status
+      console.log(`ElevenLabs API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`ElevenLabs API error: ${errorText}`);
+        throw new Error(`ElevenLabs API error: ${errorText}`);
+      }
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ElevenLabs API error: ${error}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // Ensure the directory exists
+      if (!fs.existsSync(audioDir)) {
+        fs.mkdirSync(audioDir, { recursive: true });
+      }
+      
+      // Save the audio file
+      const fileName = `${nanoid()}.mp3`;
+      const filePath = path.join(audioDir, fileName);
+      await writeFileAsync(filePath, buffer);
+      
+      const audioUrl = `/uploads/audio/${fileName}`;
+      console.log(`Audio saved to ${filePath}, URL: ${audioUrl}`);
+      
+      return audioUrl;
+    } catch (error) {
+      console.error('Error in text-to-speech processing:', error);
+      throw error;
     }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    // Save the audio file
-    const fileName = `${nanoid()}.mp3`;
-    const filePath = path.join(audioDir, fileName);
-    await writeFileAsync(filePath, buffer);
-    
-    return `/uploads/audio/${fileName}`;
   }
 
   /**
