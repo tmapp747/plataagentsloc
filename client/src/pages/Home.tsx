@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCreateApplication } from "@/hooks/useApplication";
 import { Button } from "@/components/ui/button";
@@ -13,17 +13,66 @@ import {
   DollarSign,
   Mail,
   Phone,
-  Clock3
+  Clock3,
+  MapPin
 } from "lucide-react";
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import platapayLogo from '@/assets/platapay-logo.png';
 
 const Home = () => {
   const { createApplication, isCreating } = useCreateApplication();
+  const mapRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (mapRef.current) {
+      // Initialize the map
+      const map = L.map(mapRef.current).setView([12.8797, 121.7740], 6); // Philippines center
+      
+      // Add the tile layer (map style)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Add some sample PlataPay agent locations
+      const locations = [
+        { lat: 14.5995, lng: 120.9842, name: "Manila" },
+        { lat: 10.3157, lng: 123.8854, name: "Cebu" },
+        { lat: 7.1907, lng: 125.4553, name: "Davao" },
+        { lat: 16.4023, lng: 120.5960, name: "Baguio" },
+        { lat: 13.4125, lng: 121.1830, name: "Batangas" }
+      ];
+      
+      // Custom icon for PlataPay agents
+      const agentIcon = L.icon({
+        iconUrl: 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      });
+      
+      // Add markers for each location
+      locations.forEach(loc => {
+        L.marker([loc.lat, loc.lng], { icon: agentIcon })
+          .addTo(map)
+          .bindPopup(`<b>PlataPay Agent</b><br>${loc.name}`);
+      });
+      
+      // Clean up on component unmount
+      return () => {
+        map.remove();
+      };
+    }
+  }, []);
   
   return (
     <div className="min-h-screen relative">
       {/* Hero Section with Background */}
-      <div className="bg-gradient-to-br from-primary/10 to-primary/5 pt-20 pb-24">
+      <div className="bg-gradient-to-br from-primary/20 to-primary/5 pt-16 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center mb-6">
+            <img src={platapayLogo} alt="PlataPay Logo" className="h-24 w-24" />
+          </div>
           <div className="text-center relative z-10">
             <h1 className="text-5xl font-bold text-primary mb-6 tracking-tight">
               PlataPay Agent Onboarding
@@ -109,14 +158,28 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Map Section */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-primary mb-2">Our Agent Network</h2>
+          <p className="text-gray-700 max-w-2xl mx-auto">
+            Join our growing network of PlataPay agents across the Philippines providing essential financial services to communities
+          </p>
+        </div>
+        <div 
+          ref={mapRef} 
+          className="h-[400px] w-full rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+        ></div>
+      </div>
+
       {/* Call to Action */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
-        <div className="bg-gradient-to-r from-primary/20 to-primary/5 rounded-xl p-12 flex flex-col md:flex-row items-center justify-between">
+        <div className="bg-gradient-to-r from-primary/30 to-primary/20 rounded-xl p-12 flex flex-col md:flex-row items-center justify-between">
           <div className="mb-6 md:mb-0 md:max-w-xl">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
               Ready to Become a PlataPay Agent?
             </h2>
-            <p className="text-gray-700">
+            <p className="text-white/90">
               Start your journey to financial success today and join PlataPay's growing family of financial agents.
             </p>
           </div>
@@ -124,7 +187,7 @@ const Home = () => {
             size="lg"
             onClick={createApplication}
             disabled={isCreating}
-            className="bg-primary hover:bg-primary/90 text-white shadow-md"
+            className="bg-white text-primary hover:bg-white/90 shadow-md"
           >
             {isCreating ? "Processing..." : "Apply Now"}
           </Button>
@@ -132,11 +195,15 @@ const Home = () => {
       </div>
 
       {/* Contact & Footer */}
-      <div className="bg-gray-50 border-t border-gray-200">
+      <div className="bg-primary/5 border-t border-primary/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex justify-center mb-8">
+            <img src={platapayLogo} alt="PlataPay Logo" className="h-16 w-16" />
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
                 <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
                   <Phone className="h-4 w-4 text-primary" />
                 </span>
@@ -171,7 +238,7 @@ const Home = () => {
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
                 <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
                   <FileText className="h-4 w-4 text-primary" />
                 </span>
@@ -193,9 +260,12 @@ const Home = () => {
             </div>
           </div>
           
-          <div className="mt-12 pt-6 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="mt-12 pt-6 border-t border-primary/10 text-center">
+            <p className="text-sm text-gray-600">
               © {new Date().getFullYear()} PlataPay Inc. All rights reserved.
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Innovating Payments
             </p>
           </div>
         </div>
