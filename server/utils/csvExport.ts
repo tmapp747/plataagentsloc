@@ -58,14 +58,14 @@ export function convertApplicationsToCSV(applications: Application[]): string {
       app.idType ? getIdTypeDisplay(app.idType) : "",
       app.idNumber || "",
       app.dateOfBirth ? formatDate(app.dateOfBirth) : "",
-      app.educationalBackground || "",
+      app.highestEducation || "",
       homeAddress,
       businessAddress,
       app.packageType || "",
       app.monthlyFee ? `₱${app.monthlyFee}` : "",
       app.setupFee ? `₱${app.setupFee}` : "",
-      app.businessExperience || "",
-      app.financialExperience || ""
+      app.businessBackground || "",
+      app.financialServicesBackground || ""
     ];
 
     // Escape CSV special characters and add quotes around each field

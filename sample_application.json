@@ -1,0 +1,42 @@
+{
+  "firstName": "Juan",
+  "middleName": "Dela",
+  "lastName": "Cruz",
+  "email": "juan.delacruz@example.com",
+  "phoneNumber": "+639123456789",
+  "dateOfBirth": "1985-06-15",
+  "idType": "drivers_license",
+  "idNumber": "N01-12-345678",
+  "highestEducation": "Bachelor's Degree",
+  
+  "hasCriminalRecord": false,
+  "hasBankruptcyHistory": false,
+  "hasFinancialCrimeHistory": false,
+  
+  "businessBackground": "Owned and operated a small convenience store for 5 years",
+  "financialServicesBackground": "Experience with mobile money transfers for store customers",
+  "yearsInBusiness": 5,
+  "currentOccupation": "Small Business Owner",
+  "otherActivities": "Community volunteer for financial literacy programs",
+  
+  "address": {
+    "streetAddress": "123 Rizal Street",
+    "barangay": "San Antonio",
+    "city": "Makati",
+    "province": "Metro Manila",
+    "region": "National Capital Region",
+    "landmark": "Near Central Elementary School",
+    "latitude": 14.5547,
+    "longitude": 121.0244
+  },
+  
+  "businessLocationSameAsAddress": true,
+  
+  "packageType": "standard",
+  "monthlyFee": 1000,
+  "setupFee": 2000,
+  
+  "status": "draft",
+  "applicationId": "JDC12345678",
+  "resumeToken": "JDC12345678RT"
+}
