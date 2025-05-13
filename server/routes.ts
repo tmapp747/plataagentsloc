@@ -18,6 +18,7 @@ import {
   type Application
 } from "@shared/schema";
 import { anthropicService } from "./services/anthropic";
+import { emailService } from "./services/email";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -37,9 +38,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const apiRouter = app.route('/api');
   
   // Application endpoints
+  // Create a new application and send welcome email
+  // DO NOT EDIT THIS ROUTE WITHOUT EXPLICIT PERMISSION
   app.post('/api/applications', async (req: Request, res: Response) => {
     try {
       const newApplication = await storage.createApplication({});
+      
+      // Get resume URL for the application
+      const resumeUrl = `${req.protocol}://${req.get('host')}/resume/${newApplication.resumeToken}`;
+      
+      // Send welcome email if email is provided
+      if (req.body.email) {
+        // Update application with email
+        await storage.updateApplication(newApplication.id, { email: req.body.email });
+        
+        // Send welcome email
+        await emailService.sendWelcomeEmail(
+          req.body.email,
+          newApplication.applicationId,
+          resumeUrl
+        );
+      }
+      
       return res.status(201).json(newApplication);
     } catch (error) {
       console.error('Error creating application:', error);
@@ -87,6 +107,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Submit an application and send submission confirmation email
+  // DO NOT EDIT THIS ROUTE WITHOUT EXPLICIT PERMISSION
   app.post('/api/applications/:id/submit', async (req: Request, res: Response) => {
     try {
       const applicationId = req.params.id;
@@ -106,6 +128,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         comments: 'Application submitted by user',
         performedBy: application.userId || null,
       });
+      
+      // Send submission confirmation email
+      if (application.email) {
+        await emailService.sendStatusEmail(submittedApplication, 'submitted');
+      }
       
       return res.json(submittedApplication);
     } catch (error) {
