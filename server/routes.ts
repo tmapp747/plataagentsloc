@@ -453,10 +453,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (hasAddress) completedSteps++;
     
     // Package selection step
-    if (typeof application.selectedPackage === 'string') completedSteps++;
+    if (typeof application.packageType === 'string' && application.packageType.trim() !== '') completedSteps++;
     
-    // Documents step - base it on documentCount if available
-    const hasDocuments = typeof application.documentCount === 'number' && application.documentCount > 0;
+    // Documents step - base it on documentIds array if available
+    const hasDocuments = Array.isArray(application.documentIds) && application.documentIds.length > 0;
     if (hasDocuments) completedSteps++;
     
     // Signature step
