@@ -60,29 +60,44 @@ const AgentLocationsView = () => {
     if (!applications || !Array.isArray(applications)) return [];
     
     return applications
-      .filter((app: Application) => 
-        app.status !== 'draft' && 
-        app.address && 
-        typeof app.address === 'object' &&
-        'latitude' in app.address && 
-        'longitude' in app.address
-      )
+      .filter((app: Application) => {
+        // Only include applications with valid address and coordinates
+        return app.status !== 'draft' && 
+          app.address && 
+          typeof app.address === 'object' &&
+          app.address !== null && 
+          typeof app.address.latitude === 'number' && 
+          typeof app.address.longitude === 'number';
+      })
       .map((app: Application) => {
-        // Extract agent location data
-        const address = typeof app.address === 'object' ? app.address : {};
+        // Extract agent location data with safe type checking
+        const address = app.address as Record<string, any> || {};
         
+        // Ensure we have valid coordinate values
+        const latitude = typeof address.latitude === 'number' ? address.latitude : 0;
+        const longitude = typeof address.longitude === 'number' ? address.longitude : 0;
+        
+        // Create a formatted address if possible
+        let formattedAddress: string | undefined;
+        if (
+          typeof address.street === 'string' && 
+          typeof address.city === 'string' && 
+          typeof address.province === 'string'
+        ) {
+          formattedAddress = `${address.street}, ${address.city}, ${address.province}`;
+        }
+        
+        // Create agent object with safe values
         return {
           id: app.id,
           name: `${app.firstName || ''} ${app.lastName || ''}`.trim() || `Agent #${app.applicationId}`,
-          latitude: address.latitude,
-          longitude: address.longitude,
+          latitude: latitude,
+          longitude: longitude,
           status: app.status === 'approved' ? 'active' : 
                   app.status === 'submitted' || app.status === 'under_review' ? 'pending' : 'inactive',
-          type: app.selectedPackage || 'basic',
-          address: address.street && address.city && address.province
-            ? `${address.street}, ${address.city}, ${address.province}`
-            : undefined,
-          region: address.region
+          type: typeof app.selectedPackage === 'string' ? app.selectedPackage : 'basic',
+          address: formattedAddress,
+          region: typeof address.region === 'string' ? address.region : undefined
         } as Agent;
       });
   }, [applications]);

@@ -403,13 +403,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const totalSteps = 7; // Total number of major steps
     let completedSteps = 0;
     
-    // Check which steps are completed
+    // Check which steps are completed with proper type checking
     if (application.firstName && application.lastName && application.email) completedSteps++;
-    if (application.idType && application.idNumber) completedSteps++;
-    if (application.businessExperience || application.currentOccupation) completedSteps++;
-    if (application.address && application.address.street) completedSteps++;
-    if (application.selectedPackage) completedSteps++;
-    if (application.documentsUploaded) completedSteps++;
+    
+    // Background check step
+    if (typeof application.idType === 'string' && typeof application.idNumber === 'string') completedSteps++;
+    
+    // Business experience step
+    const hasBusinessInfo = typeof application.address === 'object' && 
+      application.address !== null && 
+      'businessName' in application.address;
+    if (hasBusinessInfo) completedSteps++;
+    
+    // Location details step
+    const hasAddress = typeof application.address === 'object' && 
+      application.address !== null && 
+      'street' in application.address;
+    if (hasAddress) completedSteps++;
+    
+    // Package selection step
+    if (typeof application.selectedPackage === 'string') completedSteps++;
+    
+    // Documents step - base it on documentCount if available
+    const hasDocuments = typeof application.documentCount === 'number' && application.documentCount > 0;
+    if (hasDocuments) completedSteps++;
+    
+    // Signature step
     if (application.signatureUrl && application.termsAccepted) completedSteps++;
     
     const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
@@ -417,6 +436,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
   
   // Admin API endpoints
+  app.get('/api/admin/all-applications', async (req: Request, res: Response) => {
+    try {
+      // Fetch all applications, primarily for map display
+      const applications = await db
+        .select()
+        .from(agentApplications)
+        .where(ne(agentApplications.status, 'draft'))
+        .orderBy(desc(agentApplications.updatedAt));
+        
+      return res.json(applications);
+    } catch (error) {
+      console.error('Error fetching all applications:', error);
+      return res.status(500).json({ message: 'Failed to fetch applications' });
+    }
+  });
+  
   app.get('/api/admin/statistics', async (req: Request, res: Response) => {
     try {
       const [totalApplications] = await db

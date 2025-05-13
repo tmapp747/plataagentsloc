@@ -230,11 +230,20 @@ const AdminPanel = () => {
         
         <CardContent className="p-6">
           <Tabs defaultValue="applications" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 mb-6">
+            <TabsList className="grid grid-cols-4 mb-6">
               <TabsTrigger value="applications">Applications</TabsTrigger>
+              <TabsTrigger value="locations">Agent Locations</TabsTrigger>
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
+            
+            {/* Agent Locations Tab */}
+            <TabsContent value="locations" className="space-y-6">
+              <h2 className="text-xl font-semibold">Agent Locations Map</h2>
+              <div className="bg-white rounded-md shadow">
+                <AgentLocationsView />
+              </div>
+            </TabsContent>
             
             {/* Applications Tab */}
             <TabsContent value="applications" className="space-y-6">
