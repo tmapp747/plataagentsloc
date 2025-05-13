@@ -16,6 +16,7 @@ import {
   regions, 
   provinces
 } from "@shared/schema";
+import { anthropicService } from "./services/anthropic";
 
 // Set up multer for file uploads
 const upload = multer({
