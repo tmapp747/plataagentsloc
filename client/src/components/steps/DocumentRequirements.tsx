@@ -18,6 +18,7 @@ import FormNavigation from "@/components/FormNavigation";
 import FormSaveContinue from "@/components/FormSaveContinue";
 import FormValidationSummary from "@/components/FormValidationSummary";
 import FileUpload from "@/components/shared/FileUpload";
+import StepAudio from "@/components/StepAudio";
 import { Application } from "@shared/schema";
 import { requiredDocuments } from "@/lib/formSchema";
 
@@ -116,7 +117,8 @@ const DocumentRequirements = ({
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Document Requirements</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Document Requirements</h2>
+      <StepAudio step="documentRequirements" autoPlay={true} />
       <p className="text-sm text-gray-500 mb-6">
         Please upload the following documents to complete your application.
       </p>

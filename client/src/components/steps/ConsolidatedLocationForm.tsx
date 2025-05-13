@@ -19,6 +19,7 @@ import FormSaveContinue from "@/components/FormSaveContinue";
 import FormValidationSummary from "@/components/FormValidationSummary";
 import AddressFormField from "@/components/shared/AddressFormField";
 import MapComponent from "@/components/shared/MapComponent";
+import StepAudio from "@/components/StepAudio";
 import { Application } from "@shared/schema";
 
 // Schema for both home and business addresses
@@ -165,7 +166,8 @@ const ConsolidatedLocationForm = ({
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Location Details</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Location Details</h2>
+      <StepAudio step="addressDetails" autoPlay={true} />
       <p className="text-sm text-gray-500 mb-6">
         Please provide your home address and business location details.
       </p>
