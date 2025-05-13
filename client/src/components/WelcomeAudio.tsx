@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTextToSpeech } from '@/hooks/useVoiceApi';
 import { VoiceSettings } from './VoiceSettings';
 
 interface WelcomeAudioProps {
@@ -10,60 +9,105 @@ interface WelcomeAudioProps {
   autoPlay?: boolean;
 }
 
-const WelcomeAudio = ({ name = '', voiceSettings, autoPlay = true }: WelcomeAudioProps) => {
-  const { play, stop, isPlaying, isLoading } = useTextToSpeech();
+const WelcomeAudio = ({ autoPlay = true }: WelcomeAudioProps) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const hasAutoPlayed = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Welcome message with personalization in Tagalog
-  const getWelcomeMessage = () => {
-    const userName = name ? name : 'aplikante';
-    return `Kumusta ${userName}, maligayang pagdating sa PlataPay Agent Onboarding Platform. Ako si Madam Lyn, at gagabayan kita sa proseso ng iyong aplikasyon. Magsimula na tayo!`;
-  };
+  // Using pre-recorded welcome message in Tagalog
+  const prerecordedAudioUrl = '/uploads/audio/welcome_tagalog.mp3';
+  
+  // Setup audio element
+  useEffect(() => {
+    // Create audio element if it doesn't exist
+    if (!audioRef.current) {
+      audioRef.current = new Audio(prerecordedAudioUrl);
+      
+      // Add event listeners
+      audioRef.current.addEventListener('ended', () => {
+        console.log('Audio playback ended');
+        setIsPlaying(false);
+      });
+      
+      audioRef.current.addEventListener('pause', () => {
+        console.log('Audio playback paused');
+        setIsPlaying(false);
+      });
+      
+      audioRef.current.addEventListener('error', (e) => {
+        console.error('Audio playback error:', e);
+        setIsPlaying(false);
+        setIsLoading(false);
+      });
+      
+      audioRef.current.addEventListener('canplaythrough', () => {
+        console.log('Audio can play through');
+        setIsLoading(false);
+      });
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeAttribute('src');
+        audioRef.current.load();
+      }
+    };
+  }, [prerecordedAudioUrl]);
   
   // Auto-play welcome message on component mount - only once
   useEffect(() => {
-    if (autoPlay && !hasAutoPlayed.current && !isPlaying) {
+    if (autoPlay && !hasAutoPlayed.current && audioRef.current) {
       hasAutoPlayed.current = true;
-      console.log("Auto-playing welcome message on mount (once only)");
-      
-      // Optimized settings for Tagalog accent
-      const settings = {
-        stability: voiceSettings?.stability || 0.7,
-        similarity_boost: voiceSettings?.similarityBoost || 0.8,
-        style: voiceSettings?.style || 0.45,
-        use_speaker_boost: voiceSettings?.useSpeakerBoost !== undefined ? voiceSettings.useSpeakerBoost : true
-      };
+      console.log("Auto-playing pre-recorded welcome message (once only)");
       
       // Slight delay to ensure the component is fully mounted
       const timer = setTimeout(() => {
-        play(getWelcomeMessage(), settings);
+        playAudio();
       }, 1000);
       
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [autoPlay]);
+  
+  const playAudio = () => {
+    if (!audioRef.current) return;
+    
+    setIsLoading(true);
+    
+    audioRef.current.play()
+      .then(() => {
+        console.log('Audio playback started successfully');
+        setIsPlaying(true);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Error playing audio:', err);
+        setIsPlaying(false);
+        setIsLoading(false);
+      });
+  };
+  
+  const stopAudio = () => {
+    if (!audioRef.current) return;
+    
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    setIsPlaying(false);
+  };
   
   const togglePlayPause = () => {
     console.log('Toggle play/pause - current isPlaying state:', isPlaying);
     
     if (isPlaying) {
       console.log('Stopping audio playback');
-      stop();
+      stopAudio();
     } else {
-      const message = getWelcomeMessage();
-      console.log('Starting audio playback with message:', message.substring(0, 30) + '...');
-      
-      // Optimized settings for Tagalog accent
-      const settings = {
-        stability: voiceSettings?.stability || 0.7,
-        similarity_boost: voiceSettings?.similarityBoost || 0.8,
-        style: voiceSettings?.style || 0.45,
-        use_speaker_boost: voiceSettings?.useSpeakerBoost !== undefined ? voiceSettings.useSpeakerBoost : true
-      };
-      
-      console.log('Using voice settings:', settings);
-      play(message, settings);
+      console.log('Starting audio playback with pre-recorded message');
+      playAudio();
     }
   };
   
