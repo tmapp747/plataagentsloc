@@ -30,6 +30,9 @@ export function useTextToSpeech() {
   
   const mutation = useMutation({
     mutationFn: async ({ text, options }: { text: string; options?: VoiceApiOptions }) => {
+      console.log('Sending TTS request with text:', text.substring(0, 30) + '...');
+      console.log('Voice options:', options);
+      
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -40,6 +43,12 @@ export function useTextToSpeech() {
           ...options
         })
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('TTS API error:', response.status, errorText);
+        throw new Error(`TTS API error: ${response.status} ${errorText}`);
+      }
       
       return response.json();
     },
@@ -52,12 +61,31 @@ export function useTextToSpeech() {
           audio.src = '';
         }
         
+        console.log('Received audio URL:', data.audioUrl);
         const newAudio = new Audio(data.audioUrl);
-        newAudio.addEventListener('ended', () => setIsPlaying(false));
-        newAudio.addEventListener('pause', () => setIsPlaying(false));
-        newAudio.addEventListener('error', () => setIsPlaying(false));
         
+        newAudio.addEventListener('ended', () => {
+          console.log('Audio playback ended');
+          setIsPlaying(false);
+        });
+        
+        newAudio.addEventListener('pause', () => {
+          console.log('Audio playback paused');
+          setIsPlaying(false);
+        });
+        
+        newAudio.addEventListener('error', (e) => {
+          console.error('Audio playback error:', e);
+          setIsPlaying(false);
+        });
+        
+        newAudio.addEventListener('canplaythrough', () => {
+          console.log('Audio can play through');
+        });
+        
+        console.log('Attempting to play audio...');
         newAudio.play().then(() => {
+          console.log('Audio playback started successfully');
           setIsPlaying(true);
           setAudio(newAudio);
         }).catch(err => {

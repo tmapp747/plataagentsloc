@@ -19,15 +19,24 @@ const WelcomeAudio = ({ name = '', voiceSettings }: WelcomeAudioProps) => {
   };
   
   const togglePlayPause = () => {
+    console.log('Toggle play/pause - current isPlaying state:', isPlaying);
+    
     if (isPlaying) {
+      console.log('Stopping audio playback');
       stop();
     } else {
-      play(getWelcomeMessage(), {
+      const message = getWelcomeMessage();
+      console.log('Starting audio playback with message:', message.substring(0, 30) + '...');
+      
+      const settings = {
         stability: voiceSettings?.stability,
         similarity_boost: voiceSettings?.similarityBoost,
         style: voiceSettings?.style,
         use_speaker_boost: voiceSettings?.useSpeakerBoost
-      });
+      };
+      
+      console.log('Using voice settings:', settings);
+      play(message, settings);
     }
   };
   
