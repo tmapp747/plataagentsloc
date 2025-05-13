@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { Application } from "@shared/schema";
+import platapayLogo from '@/assets/platapay-logo.png';
 import FormProgress from "./FormProgress";
 import Welcome from "./steps/Welcome";
 import PersonalInfo from "./steps/PersonalInfo";
@@ -92,7 +93,7 @@ const ApplicationForm = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Skeleton className="h-12 w-full mb-8" />
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div className="bg-gradient-to-b from-primary/10 to-white shadow-lg rounded-lg overflow-hidden border border-primary/20">
           <div className="p-6">
             <Skeleton className="h-8 w-64 mb-6" />
             <Skeleton className="h-4 w-full mb-6" />
@@ -124,22 +125,32 @@ const ApplicationForm = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex justify-center mb-6">
+        <img 
+          src={platapayLogo} 
+          alt="PlataPay Logo" 
+          className="h-16 w-16"
+        />
+      </div>
+    
       <FormProgress 
         steps={steps} 
         currentStep={currentStep} 
         applicationStatus={application?.status}
       />
       
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <CurrentStepComponent
-          application={application}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-          onSubmit={handleSubmit}
-          onSave={handleSaveAndContinue}
-          applicationId={applicationId || ''}
-          isLoading={updateApplicationMutation.isPending || submitApplicationMutation.isPending}
-        />
+      <div className="bg-gradient-to-b from-primary/20 to-primary/5 shadow-lg rounded-lg overflow-hidden border border-primary/20">
+        <div className="p-2 bg-white/80 m-2 rounded-md">
+          <CurrentStepComponent
+            application={application}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            onSubmit={handleSubmit}
+            onSave={handleSaveAndContinue}
+            applicationId={applicationId || ''}
+            isLoading={updateApplicationMutation.isPending || submitApplicationMutation.isPending}
+          />
+        </div>
       </div>
     </div>
   );
