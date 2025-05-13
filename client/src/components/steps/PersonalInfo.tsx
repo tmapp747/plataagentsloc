@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { personalInfoSchema } from "@shared/schema";
@@ -73,8 +73,8 @@ const PersonalInfo = ({
   // Generate validation success/error state when values change
   const formState = form.formState;
   
-  useState(() => {
-    // Check if the form is valid whenever the form state changes
+  // Check if the form is valid whenever the form state changes
+  useEffect(() => {
     const subscription = form.watch(() => {
       if (Object.keys(formState.errors).length === 0 && formState.isDirty) {
         setValidationSuccess(true);
@@ -83,8 +83,9 @@ const PersonalInfo = ({
       }
     });
     
+    // Cleanup function
     return () => subscription.unsubscribe();
-  });
+  }, [form, formState.errors, formState.isDirty]);
 
   const onSubmit = (data: PersonalInfoData) => {
     onNext(data);

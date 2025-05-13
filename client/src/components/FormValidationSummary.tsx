@@ -40,11 +40,14 @@ const FormValidationSummary = ({
           {hasErrors && (
             <div className="mt-2 text-sm text-red-700">
               <ul className="list-disc pl-5 space-y-1">
-                {Object.entries(errors).map(([field, messages]) => (
-                  messages.map((message, index) => (
+                {Object.entries(errors).flatMap(([field, messages]) => {
+                  // Ensure messages is always an array
+                  const messageArray = Array.isArray(messages) ? messages : [messages];
+                  
+                  return messageArray.map((message, index) => (
                     <li key={`${field}-${index}`}>{message}</li>
-                  ))
-                ))}
+                  ));
+                })}
               </ul>
             </div>
           )}
