@@ -7,6 +7,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { insertApplicationSchema, insertDocumentSchema } from "@shared/schema";
+import { elevenlabsService } from "./services/elevenlabs";
 
 // Set up multer for file uploads
 const upload = multer({
