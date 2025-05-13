@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import FormNavigation from "@/components/FormNavigation";
 import WelcomeAudio from "@/components/WelcomeAudio";
+import VoiceSettings, { VoiceSettings as VoiceSettingsType } from "@/components/VoiceSettings";
 import { Application } from "@shared/schema";
 
 const welcomeSchema = z.object({
@@ -32,6 +33,13 @@ interface WelcomeProps {
 }
 
 const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
+  const [voiceSettings, setVoiceSettings] = useState({
+    stability: 0.5,
+    similarityBoost: 0.75,
+    style: 0,
+    useSpeakerBoost: true
+  });
+  
   const form = useForm<WelcomeData>({
     resolver: zodResolver(welcomeSchema),
     defaultValues: {
@@ -42,12 +50,20 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
   const onSubmit = (data: WelcomeData) => {
     onNext();
   };
+  
+  const handleVoiceSettingsChange = (settings: VoiceSettingsType) => {
+    setVoiceSettings(settings);
+  };
 
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Welcome to PlataPay Agent Onboarding</h2>
       
       <WelcomeAudio name={application?.firstName || ''} />
+      
+      <div className="mb-4">
+        <VoiceSettings onVoiceSettingsChange={handleVoiceSettingsChange} />
+      </div>
       
       <div className="prose prose-sm max-w-none mb-6">
         <p>
