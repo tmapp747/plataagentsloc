@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import StepAudio from "@/components/StepAudio";
 import { 
   Check, 
   ChevronRight, 
@@ -74,7 +75,8 @@ const FormSummary = ({
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Your Application</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Review Your Application</h2>
+      <StepAudio step="summary" autoPlay={true} />
       <p className="text-sm text-gray-500 mb-6">
         Please review your application information before submission. You can make changes by going back to the relevant sections.
       </p>

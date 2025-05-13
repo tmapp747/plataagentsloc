@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Application } from "@shared/schema";
 import { formatDate } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import StepAudio from "@/components/StepAudio";
 
 interface ConfirmationProps {
   application?: Application;
@@ -24,6 +25,7 @@ const Confirmation = ({ application, applicationId }: ConfirmationProps) => {
           <CheckCircle2 className="h-12 w-12 text-green-600" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted Successfully!</h2>
+        <StepAudio step="confirmation" autoPlay={true} />
         <p className="text-gray-600 max-w-xl">
           Thank you for completing your PlataPay agent application. We've received your information and will begin the review process.
         </p>
