@@ -340,7 +340,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Welcome message text-to-speech endpoint
+  // Pre-recorded welcome message in Tagalog
+  const PRERECORDED_WELCOME_URL = '/uploads/audio/welcome_tagalog.mp3';
+  const PRERECORDED_WELCOME_TEXT = 'Kumusta aplikante, maligayang pagdating sa PlataPay Agent Onboarding Platform. Ako si Madam Lyn, at gagabayan kita sa proseso ng iyong aplikasyon. Magsimula na tayo!';
+  
+  // Generate the pre-recorded welcome message if it doesn't exist yet
+  async function ensurePrerecordedWelcomeExists() {
+    const welcomeFilePath = path.join(process.cwd(), 'uploads', 'audio', 'welcome_tagalog.mp3');
+    
+    if (!fs.existsSync(welcomeFilePath)) {
+      console.log('Pre-recorded welcome message not found. Generating...');
+      try {
+        await elevenlabsService.textToSpeech({
+          text: PRERECORDED_WELCOME_TEXT,
+          voice_id: 'NgAcehsHf3YdZ2ERfilE', // Madam Lyn's voice ID
+          model_id: 'eleven_multilingual_v2',
+          stability: 0.7,
+          similarity_boost: 0.8,
+          style: 0.45,
+          use_speaker_boost: true,
+          output_path: welcomeFilePath
+        });
+        console.log('Pre-recorded welcome message generated successfully');
+      } catch (error) {
+        console.error('Failed to generate pre-recorded welcome message:', error);
+      }
+    }
+  }
+  
+  // Create the pre-recorded welcome message on server start
+  ensurePrerecordedWelcomeExists();
+  
+  // Pre-recorded welcome message endpoint
+  app.get('/api/prerecorded-welcome', (_req: Request, res: Response) => {
+    res.json({ audioUrl: PRERECORDED_WELCOME_URL });
+  });
+  
+  // Welcome message text-to-speech endpoint (kept for backward compatibility)
   app.get('/api/welcome-message', async (req: Request, res: Response) => {
     try {
       const name = req.query.name as string || 'applicant';

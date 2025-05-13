@@ -33,6 +33,16 @@ export function useTextToSpeech() {
       console.log('Sending TTS request with text:', text.substring(0, 30) + '...');
       console.log('Voice options:', options);
       
+      // Updated to use the multilingual model for Tagalog
+      const requestOptions = {
+        ...options,
+        model_id: 'eleven_multilingual_v2',
+        stability: options?.stability || 0.7,
+        similarity_boost: options?.similarity_boost || 0.8,
+        style: options?.style || 0.45,
+        use_speaker_boost: options?.use_speaker_boost !== undefined ? options.use_speaker_boost : true
+      };
+      
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -40,7 +50,7 @@ export function useTextToSpeech() {
         },
         body: JSON.stringify({
           text,
-          ...options
+          ...requestOptions
         })
       });
       

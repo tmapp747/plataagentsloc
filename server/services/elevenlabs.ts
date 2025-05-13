@@ -23,6 +23,7 @@ export interface TextToSpeechOptions {
   similarity_boost?: number;
   style?: number;
   use_speaker_boost?: boolean;
+  output_path?: string; // Optional specific output path for the audio file
 }
 
 export class ElevenLabsService {
@@ -44,10 +45,12 @@ export class ElevenLabsService {
     const {
       text,
       voice_id = MADAM_LYN_VOICE_ID,
-      model_id = 'eleven_monolingual_v1',
-      stability = 0.5,
-      similarity_boost = 0.75,
-      style = 0,
+      // Use the multilingual model for better Tagalog support
+      model_id = 'eleven_multilingual_v2',
+      // Optimized settings for Tagalog accent
+      stability = 0.7,
+      similarity_boost = 0.8,
+      style = 0.45,
       use_speaker_boost = true
     } = options;
 
@@ -91,12 +94,28 @@ export class ElevenLabsService {
         fs.mkdirSync(audioDir, { recursive: true });
       }
       
-      // Save the audio file
-      const fileName = `${nanoid()}.mp3`;
-      const filePath = path.join(audioDir, fileName);
-      await writeFileAsync(filePath, buffer);
+      // Save the audio file either to the specified path or generate a new path
+      let filePath, audioUrl;
       
-      const audioUrl = `/uploads/audio/${fileName}`;
+      if (options.output_path) {
+        // Use the specified output path
+        filePath = options.output_path;
+        const relativePath = filePath.replace(process.cwd(), '').replace(/\\/g, '/');
+        audioUrl = relativePath.startsWith('/uploads') ? relativePath : `/uploads/audio/${path.basename(filePath)}`;
+      } else {
+        // Generate a new random filename
+        const fileName = `${nanoid()}.mp3`;
+        filePath = path.join(audioDir, fileName);
+        audioUrl = `/uploads/audio/${fileName}`;
+      }
+      
+      // Ensure directory exists
+      const fileDir = path.dirname(filePath);
+      if (!fs.existsSync(fileDir)) {
+        fs.mkdirSync(fileDir, { recursive: true });
+      }
+      
+      await writeFileAsync(filePath, buffer);
       console.log(`Audio saved to ${filePath}, URL: ${audioUrl}`);
       
       return audioUrl;

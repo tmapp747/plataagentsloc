@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTextToSpeech } from '@/hooks/useVoiceApi';
@@ -12,6 +12,7 @@ interface WelcomeAudioProps {
 
 const WelcomeAudio = ({ name = '', voiceSettings, autoPlay = true }: WelcomeAudioProps) => {
   const { play, stop, isPlaying, isLoading } = useTextToSpeech();
+  const hasAutoPlayed = useRef(false);
   
   // Welcome message with personalization in Tagalog
   const getWelcomeMessage = () => {
@@ -19,14 +20,17 @@ const WelcomeAudio = ({ name = '', voiceSettings, autoPlay = true }: WelcomeAudi
     return `Kumusta ${userName}, maligayang pagdating sa PlataPay Agent Onboarding Platform. Ako si Madam Lyn, at gagabayan kita sa proseso ng iyong aplikasyon. Magsimula na tayo!`;
   };
   
-  // Auto-play welcome message on component mount
+  // Auto-play welcome message on component mount - only once
   useEffect(() => {
-    if (autoPlay) {
-      console.log("Auto-playing welcome message on mount");
+    if (autoPlay && !hasAutoPlayed.current && !isPlaying) {
+      hasAutoPlayed.current = true;
+      console.log("Auto-playing welcome message on mount (once only)");
+      
+      // Optimized settings for Tagalog accent
       const settings = {
-        stability: voiceSettings?.stability || 0.5,
-        similarity_boost: voiceSettings?.similarityBoost || 0.75,
-        style: voiceSettings?.style || 0,
+        stability: voiceSettings?.stability || 0.7,
+        similarity_boost: voiceSettings?.similarityBoost || 0.8,
+        style: voiceSettings?.style || 0.45,
         use_speaker_boost: voiceSettings?.useSpeakerBoost !== undefined ? voiceSettings.useSpeakerBoost : true
       };
       
@@ -38,7 +42,7 @@ const WelcomeAudio = ({ name = '', voiceSettings, autoPlay = true }: WelcomeAudi
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPlay, name, voiceSettings, play]);
+  }, []);
   
   const togglePlayPause = () => {
     console.log('Toggle play/pause - current isPlaying state:', isPlaying);
@@ -50,11 +54,12 @@ const WelcomeAudio = ({ name = '', voiceSettings, autoPlay = true }: WelcomeAudi
       const message = getWelcomeMessage();
       console.log('Starting audio playback with message:', message.substring(0, 30) + '...');
       
+      // Optimized settings for Tagalog accent
       const settings = {
-        stability: voiceSettings?.stability,
-        similarity_boost: voiceSettings?.similarityBoost,
-        style: voiceSettings?.style,
-        use_speaker_boost: voiceSettings?.useSpeakerBoost
+        stability: voiceSettings?.stability || 0.7,
+        similarity_boost: voiceSettings?.similarityBoost || 0.8,
+        style: voiceSettings?.style || 0.45,
+        use_speaker_boost: voiceSettings?.useSpeakerBoost !== undefined ? voiceSettings.useSpeakerBoost : true
       };
       
       console.log('Using voice settings:', settings);
