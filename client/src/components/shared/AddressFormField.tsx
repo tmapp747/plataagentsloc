@@ -35,22 +35,71 @@ const AddressFormField = ({
     queryKey: ['/api/regions'],
   });
 
-  // Fetch provinces based on selected region
+  // Map of region codes to region IDs for API calls
+  const [regionIdMap, setRegionIdMap] = useState<Record<string, number>>({});
+  // Map of province codes to province IDs for API calls
+  const [provinceIdMap, setProvinceIdMap] = useState<Record<string, number>>({});
+  // Map of city codes to city IDs for API calls
+  const [cityIdMap, setCityIdMap] = useState<Record<string, number>>({});
+
+  // Update region ID map when regions data is loaded
+  useEffect(() => {
+    if (regions) {
+      const newMap: Record<string, number> = {};
+      regions.forEach((region: any) => {
+        newMap[region.code] = region.id;
+      });
+      setRegionIdMap(newMap);
+    }
+  }, [regions]);
+
+  // Get the region ID from the code
+  const selectedRegionId = selectedRegion ? regionIdMap[selectedRegion] : undefined;
+
+  // Fetch provinces based on selected region ID
   const { data: provinces, isLoading: provincesLoading } = useQuery({
-    queryKey: ['/api/provinces', selectedRegion],
-    enabled: !!selectedRegion,
+    queryKey: ['/api/provinces', { regionId: selectedRegionId }],
+    enabled: !!selectedRegionId,
   });
 
-  // Fetch cities based on selected province
+  // Update province ID map when provinces data is loaded
+  useEffect(() => {
+    if (provinces) {
+      const newMap: Record<string, number> = {};
+      provinces.forEach((province: any) => {
+        newMap[province.code] = province.id;
+      });
+      setProvinceIdMap(newMap);
+    }
+  }, [provinces]);
+
+  // Get the province ID from the code
+  const selectedProvinceId = selectedProvince ? provinceIdMap[selectedProvince] : undefined;
+
+  // Fetch cities based on selected province ID
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ['/api/cities', selectedProvince],
-    enabled: !!selectedProvince,
+    queryKey: ['/api/cities', { provinceId: selectedProvinceId }],
+    enabled: !!selectedProvinceId,
   });
 
-  // Fetch barangays based on selected city
+  // Update city ID map when cities data is loaded
+  useEffect(() => {
+    if (cities) {
+      const newMap: Record<string, number> = {};
+      cities.forEach((city: any) => {
+        newMap[city.code] = city.id;
+      });
+      setCityIdMap(newMap);
+    }
+  }, [cities]);
+
+  // Get the city ID from the code
+  const selectedCityId = selectedCity ? cityIdMap[selectedCity] : undefined;
+
+  // Fetch barangays based on selected city ID
   const { data: barangays, isLoading: barangaysLoading } = useQuery({
-    queryKey: ['/api/barangays', selectedCity],
-    enabled: !!selectedCity,
+    queryKey: ['/api/barangays', { cityId: selectedCityId }],
+    enabled: !!selectedCityId,
   });
 
   // Update the address when a selection changes
