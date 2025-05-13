@@ -32,7 +32,7 @@ import { Loader2, Send, MessageSquare, Languages, Volume2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import platapayLogo from '@assets/platapay-logo.png';
+import platapayLogo from '../assets/platapay-logo.png';
 
 interface Message {
   id: string;
@@ -208,59 +208,80 @@ const AIAssistant = ({
       <div
         key={message.id}
         className={cn(
-          'flex flex-col p-3 rounded-lg my-2 max-w-[80%]',
+          'flex my-4 items-start gap-2 max-w-full',
           message.role === 'user' 
-            ? 'ml-auto bg-primary text-primary-foreground' 
-            : 'mr-auto bg-muted'
+            ? 'ml-auto justify-end' 
+            : 'mr-auto'
         )}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-medium">
-            {message.role === 'user' ? 'You' : 'PlataPay Assistant'}
-          </span>
-          {message.dialect && message.role === 'assistant' && (
-            <span className="text-xs opacity-70">
-              ({supportedDialects[message.dialect as keyof typeof supportedDialects]})
+        {message.role === 'assistant' && (
+          <Avatar className="h-8 w-8 border border-primary/20">
+            <AvatarImage src={platapayLogo} alt="PlataPay CSR" />
+            <AvatarFallback>PP</AvatarFallback>
+          </Avatar>
+        )}
+        
+        <div className={cn(
+          'flex flex-col p-3 rounded-lg',
+          message.role === 'user' 
+            ? 'bg-primary text-primary-foreground' 
+            : 'bg-muted',
+          message.role === 'user' ? 'max-w-[80%]' : 'max-w-[85%]'
+        )}>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium">
+              {message.role === 'user' ? 'You' : 'PlataPay CSR'}
             </span>
+            {message.dialect && message.role === 'assistant' && (
+              <span className="text-xs opacity-70">
+                ({supportedDialects[message.dialect as keyof typeof supportedDialects]})
+              </span>
+            )}
+          </div>
+          
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          
+          {message.role === 'assistant' && (
+            <div className="flex items-center gap-2 mt-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-6 w-6">
+                    <Languages className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-52 p-2" align="start">
+                  <div className="grid gap-1">
+                    {Object.entries(supportedDialects).map(([key, label]) => (
+                      <Button
+                        key={key}
+                        size="sm"
+                        variant="ghost"
+                        className="justify-start font-normal"
+                        onClick={() => handleTranslate(
+                          message.id,
+                          message.content,
+                          key as keyof typeof supportedDialects
+                        )}
+                        disabled={translateMutation.isPending || key === message.dialect}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              <Button size="icon" variant="ghost" className="h-6 w-6">
+                <Volume2 className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
         
-        <p className="text-sm">{message.content}</p>
-        
-        {message.role === 'assistant' && (
-          <div className="flex items-center gap-2 mt-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-6 w-6">
-                  <Languages className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-52 p-2" align="start">
-                <div className="grid gap-1">
-                  {Object.entries(supportedDialects).map(([key, label]) => (
-                    <Button
-                      key={key}
-                      size="sm"
-                      variant="ghost"
-                      className="justify-start font-normal"
-                      onClick={() => handleTranslate(
-                        message.id,
-                        message.content,
-                        key as keyof typeof supportedDialects
-                      )}
-                      disabled={translateMutation.isPending || key === message.dialect}
-                    >
-                      {label}
-                    </Button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-            
-            <Button size="icon" variant="ghost" className="h-6 w-6">
-              <Volume2 className="h-4 w-4" />
-            </Button>
-          </div>
+        {message.role === 'user' && (
+          <Avatar className="h-8 w-8 border border-primary/20">
+            <AvatarFallback>You</AvatarFallback>
+          </Avatar>
         )}
       </div>
     ));
@@ -268,20 +289,26 @@ const AIAssistant = ({
   
   const content = (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-2 border-b">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h3 className="font-medium">PlataPay Assistant</h3>
+      <div className="px-4 py-3 border-b bg-gradient-to-r from-slate-100 to-slate-50">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border border-slate-200">
+            <AvatarImage src={platapayLogo} alt="PlataPay CSR" />
+            <AvatarFallback>PP</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="font-medium text-primary">PlataPay CSR</h3>
+            <p className="text-xs text-muted-foreground">Customer Service Representative</p>
+          </div>
         </div>
         
-        <div className="flex items-center gap-2 mt-2">
-          <label className="text-sm">Language:</label>
+        <div className="flex items-center gap-2 mt-3">
+          <label className="text-sm font-medium">Dialect:</label>
           <Select
             value={dialect}
             onValueChange={(value) => setDialect(value as keyof typeof supportedDialects)}
           >
-            <SelectTrigger className="h-8 w-40">
-              <SelectValue placeholder="Select language" />
+            <SelectTrigger className="h-8 w-48 text-sm">
+              <SelectValue placeholder="Select dialect" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(supportedDialects).map(([key, label]) => (
@@ -331,17 +358,21 @@ const AIAssistant = ({
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerTrigger asChild>
             <Button 
-              className="fixed bottom-4 right-4 rounded-full shadow-lg"
-              size="icon"
+              className="fixed bottom-4 right-4 rounded-full shadow-lg flex items-center gap-2 px-4 py-2"
+              variant="default"
             >
-              <MessageSquare className="h-5 w-5" />
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={platapayLogo} alt="PlataPay CSR" />
+                <AvatarFallback>PP</AvatarFallback>
+              </Avatar>
+              <span>Need help?</span>
             </Button>
           </DrawerTrigger>
           <DrawerContent className="h-[85vh]">
             <DrawerHeader className="p-0">
-              <DrawerTitle className="sr-only">AI Assistant</DrawerTitle>
+              <DrawerTitle className="sr-only">PlataPay CSR</DrawerTitle>
               <DrawerDescription className="sr-only">
-                Get help with your application
+                Get help with your application from PlataPay CSR
               </DrawerDescription>
             </DrawerHeader>
             {content}
