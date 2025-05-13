@@ -8,6 +8,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { insertApplicationSchema, insertDocumentSchema } from "@shared/schema";
+import { stepVoiceContent } from "@shared/voiceContent";
 import { elevenlabsService } from "./services/elevenlabs";
 import { db } from "./db";
 import { count, eq, ne, desc } from "drizzle-orm";
@@ -20,6 +21,7 @@ import {
 } from "@shared/schema";
 import { anthropicService } from "./services/anthropic";
 import { emailService } from "./services/email";
+import { prerecordedAudioService } from "./services/prerecordedAudio";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -35,6 +37,15 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Generate all pre-recorded audio files for each step
+  try {
+    console.log('Generating pre-recorded audio for all application steps...');
+    await prerecordedAudioService.generateAllStepAudio();
+    console.log('Successfully generated all pre-recorded audio files');
+  } catch (error) {
+    console.error('Error generating pre-recorded audio:', error);
+  }
+  
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
@@ -374,6 +385,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pre-recorded welcome message endpoint
   app.get('/api/prerecorded-welcome', (_req: Request, res: Response) => {
     res.json({ audioUrl: PRERECORDED_WELCOME_URL });
+  });
+  
+  // Pre-recorded step audio endpoint
+  app.get('/api/step-audio/:step', (req: Request, res: Response) => {
+    try {
+      const step = req.params.step;
+      
+      // Validate that the step exists in our stepVoiceContent
+      if (!Object.keys(stepVoiceContent).includes(step)) {
+        return res.status(404).json({ message: `Step '${step}' not found` });
+      }
+      
+      const audioUrl = prerecordedAudioService.getStepAudioUrl(step as keyof typeof stepVoiceContent);
+      return res.json({ audioUrl });
+    } catch (error) {
+      console.error('Error getting step audio:', error);
+      return res.status(500).json({ message: 'Failed to get step audio' });
+    }
   });
   
   // Welcome message text-to-speech endpoint (kept for backward compatibility)
