@@ -10,229 +10,193 @@ import {
   Briefcase, 
   Map, 
   FileText, 
-  DollarSign 
+  DollarSign,
+  Mail,
+  Phone,
+  Clock3
 } from "lucide-react";
 
 const Home = () => {
   const { createApplication, isCreating } = useCreateApplication();
   
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Become a PlataPay Financial Agent
-        </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Join our network of financial agents and help provide essential financial services to your community
-        </p>
-        <div className="mt-8">
+    <div className="min-h-screen relative">
+      {/* Hero Section with Background */}
+      <div className="bg-gradient-to-br from-primary/10 to-primary/5 pt-20 pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center relative z-10">
+            <h1 className="text-5xl font-bold text-primary mb-6 tracking-tight">
+              PlataPay Agent Onboarding
+            </h1>
+            <p className="text-xl text-gray-800 max-w-2xl mx-auto mb-10">
+              Join our growing network of financial service providers and empower your community
+            </p>
+            <Button 
+              size="lg"
+              onClick={createApplication}
+              disabled={isCreating}
+              className="bg-primary hover:bg-primary/90 text-white font-medium py-6 px-8 rounded-md shadow-lg"
+            >
+              {isCreating ? (
+                <>
+                  <Clock className="mr-2 h-5 w-5 animate-spin" />
+                  Creating Application...
+                </>
+              ) : (
+                <>
+                  Start Your Application
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Key Benefits Section */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 -mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="border-primary/10 shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Briefcase className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Premium Franchise</CardTitle>
+              <CardDescription>
+                Exclusive PlataPay Packages
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700">
+                Access our range of competitive packages designed to maximize your business potential.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-primary/10 shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Simplified Process</CardTitle>
+              <CardDescription>
+                Quick & Efficient Application
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700">
+                Complete your application in under 30 minutes with our streamlined onboarding platform.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-primary/10 shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Map className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Strategic Locations</CardTitle>
+              <CardDescription>
+                Nationwide Network Support
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700">
+                Join our strategically positioned network of agents across the Philippines.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+        <div className="bg-gradient-to-r from-primary/20 to-primary/5 rounded-xl p-12 flex flex-col md:flex-row items-center justify-between">
+          <div className="mb-6 md:mb-0 md:max-w-xl">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              Ready to Become a PlataPay Agent?
+            </h2>
+            <p className="text-gray-700">
+              Start your journey to financial success today and join PlataPay's growing family of financial agents.
+            </p>
+          </div>
           <Button 
             size="lg"
             onClick={createApplication}
             disabled={isCreating}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90 text-white shadow-md"
           >
-            {isCreating ? (
-              <>
-                <Clock className="mr-2 h-4 w-4 animate-spin" />
-                Creating Application...
-              </>
-            ) : (
-              <>
-                Start Your Application
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
+            {isCreating ? "Processing..." : "Apply Now"}
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-primary" />
-              Quick Application
-            </CardTitle>
-            <CardDescription>
-              Complete your application in less than 30 minutes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Our streamlined process makes it easy to apply. You can save your progress and resume later if needed.
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Briefcase className="h-5 w-5 mr-2 text-primary" />
-              Business Opportunity
-            </CardTitle>
-            <CardDescription>
-              Grow your income with our competitive packages
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Choose from flexible business packages designed to fit your needs and maximize your earning potential.
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle2 className="h-5 w-5 mr-2 text-primary" />
-              Full Support
-            </CardTitle>
-            <CardDescription>
-              Comprehensive training and ongoing assistance
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Our team provides complete support to ensure your success as a PlataPay financial agent.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Application Process
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
-              <FileText className="h-6 w-6" />
+      {/* Contact & Footer */}
+      <div className="bg-gray-50 border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                </span>
+                Contact Us
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-600 w-20">Email:</span>
+                  <a href="mailto:support@platapay.ph" className="text-sm text-primary hover:underline">
+                    support@platapay.ph
+                  </a>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-600 w-20">Phone:</span>
+                  <a href="tel:+63285395973" className="text-sm text-primary hover:underline">
+                    +63 (2) 8539-5973
+                  </a>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-600 w-20">Website:</span>
+                  <a href="https://platapay.ph" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                    platapay.ph
+                  </a>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-600 w-20">Hours:</span>
+                  <span className="text-sm text-gray-600">
+                    Monday to Friday, 9AM - 6PM
+                  </span>
+                </div>
+              </div>
             </div>
-            <h3 className="text-lg font-medium mb-2">Personal Info</h3>
-            <p className="text-sm text-gray-600">
-              Fill in your basic details and background information
-            </p>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                </span>
+                Legal Information
+              </h3>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  PlataPay is a leading financial services provider in the Philippines, committed to bringing innovative financial solutions to communities nationwide.
+                </p>
+                <div className="pt-2">
+                  <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline mr-4">
+                    Privacy Policy
+                  </a>
+                  <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                    Terms of Service
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
-              <Briefcase className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Business Info</h3>
-            <p className="text-sm text-gray-600">
-              Tell us about your business experience and plans
+          <div className="mt-12 pt-6 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-500">
+              © {new Date().getFullYear()} PlataPay Inc. All rights reserved.
             </p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
-              <Map className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Location</h3>
-            <p className="text-sm text-gray-600">
-              Provide your home and business locations
-            </p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
-              <DollarSign className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Package Selection</h3>
-            <p className="text-sm text-gray-600">
-              Choose the package that fits your business needs
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-primary/5 rounded-lg p-8 text-center mb-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Ready to get started?
-        </h2>
-        <p className="text-lg text-gray-600 mb-6 max-w-3xl mx-auto">
-          Start your application today and join thousands of successful PlataPay agents across the country.
-        </p>
-        <Button 
-          size="lg"
-          onClick={createApplication}
-          disabled={isCreating}
-          className="bg-primary hover:bg-primary/90"
-        >
-          {isCreating ? (
-            <>
-              <Clock className="mr-2 h-4 w-4 animate-spin" />
-              Creating Application...
-            </>
-          ) : (
-            <>
-              Apply Now
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-base font-medium text-gray-900">
-                Who can become a PlataPay agent?
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Any individual or business owner with a good reputation and suitable location can apply to become a PlataPay agent.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-gray-900">
-                How long does the approval process take?
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Most applications are processed within 3-5 business days after submission.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-base font-medium text-gray-900">
-                What documents do I need to submit?
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Required documents include government-issued ID, proof of address, and business permits if applicable.
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Contact Support
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Need help with your application or have questions about becoming a PlataPay agent?
-          </p>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-600 w-20">Email:</span>
-              <a href="mailto:agents@platapay.com" className="text-sm text-primary hover:underline">
-                agents@platapay.com
-              </a>
-            </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-600 w-20">Phone:</span>
-              <a href="tel:+6391234567890" className="text-sm text-primary hover:underline">
-                (02) 8123-4567
-              </a>
-            </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-600 w-20">Hours:</span>
-              <span className="text-sm text-gray-600">
-                Monday to Friday, 9AM - 5PM
-              </span>
-            </div>
           </div>
         </div>
       </div>

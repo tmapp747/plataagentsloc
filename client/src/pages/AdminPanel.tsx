@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardFooter 
 } from "@/components/ui/card";
+import AgentLocationsView from "@/components/admin/AgentLocationsView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
