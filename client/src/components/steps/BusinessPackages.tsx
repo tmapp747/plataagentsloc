@@ -18,6 +18,7 @@ import { Check, X } from "lucide-react";
 import FormNavigation from "@/components/FormNavigation";
 import FormSaveContinue from "@/components/FormSaveContinue";
 import FormValidationSummary from "@/components/FormValidationSummary";
+import StepAudio from "@/components/StepAudio";
 import { Application } from "@shared/schema";
 import { businessPackages } from "@/lib/formSchema";
 import { formatCurrency } from "@/lib/utils";
@@ -94,7 +95,8 @@ const BusinessPackages = ({
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Business Packages</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Business Packages</h2>
+      <StepAudio step="packageSelection" autoPlay={true} />
       <p className="text-sm text-gray-500 mb-6">
         Select the package that best suits your business needs.
       </p>
