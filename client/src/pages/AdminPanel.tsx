@@ -10,6 +10,7 @@ import {
   CardFooter 
 } from "@/components/ui/card";
 import AgentLocationsView from "@/components/admin/AgentLocationsView";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
@@ -299,58 +300,10 @@ const AdminPanel = () => {
               )}
             </TabsContent>
             
-            {/* Dashboard Tab */}
-            <TabsContent value="dashboard" className="space-y-6">
-              <h2 className="text-xl font-semibold">Dashboard</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Total Applications</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{statistics?.applications?.total || 0}</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Pending Review</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{statistics?.applications?.pending || 0}</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Approved</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{statistics?.applications?.approved || 0}</p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Applications by Region</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {statistics?.regionStats?.length > 0 ? (
-                    <div className="space-y-2">
-                      {statistics.regionStats.map((stat: any) => (
-                        <div key={stat.regionName} className="flex justify-between">
-                          <span>{stat.regionName}</span>
-                          <span className="font-semibold">{stat.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No regional data available</p>
-                  )}
-                </CardContent>
-              </Card>
+            {/* Analytics Dashboard Tab - Enhanced */}
+            {/* DO NOT EDIT OR MODIFY WITHOUT EXPLICIT PERMISSION */}
+            <TabsContent value="dashboard">
+              <AnalyticsDashboard />
             </TabsContent>
             
             {/* Settings Tab */}

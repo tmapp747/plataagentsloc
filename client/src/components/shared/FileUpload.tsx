@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, Trash2, File, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
+import DocumentThumbnail from "./DocumentThumbnail";
 
 interface FileUploadProps {
   applicationId: string;
