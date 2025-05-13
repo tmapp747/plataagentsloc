@@ -22,6 +22,7 @@ import {
 import { anthropicService } from "./services/anthropic";
 import { emailService } from "./services/email";
 import { prerecordedAudioService } from "./services/prerecordedAudio";
+import { openaiService } from "./services/openai";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -454,7 +455,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const response = await anthropicService.getResponse(prompt, dialect, context);
+      // Use OpenAI GPT-4o model (check if API key is available, fallback to Anthropic)
+      let response;
+      if (process.env.OPENAI_API_KEY) {
+        try {
+          response = await openaiService.getResponse(prompt, dialect as any, context);
+        } catch (openaiError) {
+          console.error('OpenAI API error, falling back to Anthropic:', openaiError);
+          response = await anthropicService.getResponse(prompt, dialect as any, context);
+        }
+      } else {
+        response = await anthropicService.getResponse(prompt, dialect as any, context);
+      }
+      
       res.json({ response });
       
     } catch (error) {
@@ -475,11 +488,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Message is required' });
       }
       
-      const translatedMessage = await anthropicService.translateToDialect(
-        message,
-        fromDialect,
-        toDialect
-      );
+      // Use OpenAI GPT-4o model for translation if available, fallback to Anthropic
+      let translatedMessage;
+      if (process.env.OPENAI_API_KEY) {
+        try {
+          translatedMessage = await openaiService.translateToDialect(
+            message, 
+            fromDialect as any, 
+            toDialect as any
+          );
+        } catch (openaiError) {
+          console.error('OpenAI API error for translation, falling back to Anthropic:', openaiError);
+          translatedMessage = await anthropicService.translateToDialect(
+            message, 
+            fromDialect as any, 
+            toDialect as any
+          );
+        }
+      } else {
+        translatedMessage = await anthropicService.translateToDialect(
+          message, 
+          fromDialect as any, 
+          toDialect as any
+        );
+      }
       
       res.json({ 
         original: message,

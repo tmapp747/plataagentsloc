@@ -125,7 +125,7 @@ const ApplicationForm = () => {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
       <div className="flex justify-center mb-6">
         <img 
           src={platapayLogo} 
@@ -152,6 +152,15 @@ const ApplicationForm = () => {
             isLoading={updateApplicationMutation.isPending || submitApplicationMutation.isPending}
           />
         </div>
+      </div>
+      
+      {/* PlataPay AI Assistant - fixed position on right side */}
+      <div className="fixed right-0 top-1/2 transform -translate-y-1/2 z-50">
+        <AIAssistant 
+          applicationId={applicationId} 
+          currentStep={steps[currentStep].name.toLowerCase()} 
+          className="w-[350px] h-[500px] max-h-[80vh]" 
+        />
       </div>
     </div>
   );

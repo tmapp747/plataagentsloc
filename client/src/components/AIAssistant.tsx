@@ -4,6 +4,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -31,6 +32,7 @@ import { Loader2, Send, MessageSquare, Languages, Volume2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import platapayLogo from '@assets/platapay-logo.png';
 
 interface Message {
   id: string;
@@ -72,7 +74,7 @@ const AIAssistant = ({
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I\'m your PlataPay assistant. I can help answer questions about becoming a PlataPay agent, explain the application process, or provide information about our services and franchise packages. How can I help you today?',
+      content: 'Hello! I\'m your PlataPay CSR. I can help answer questions about becoming a PlataPay agent, explain the application process, or provide information about our services and franchise packages. How can I help you today?',
       dialect: 'english'
     }
   ]);
@@ -93,16 +95,13 @@ const AIAssistant = ({
   // AI chat mutation
   const chatMutation = useMutation({
     mutationFn: async (prompt: string) => {
-      return apiRequest('/api/assistant/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          dialect,
-          applicationId,
-          currentStep
-        }),
+      const response = await apiRequest('POST', '/api/assistant/chat', {
+        prompt,
+        dialect,
+        applicationId,
+        currentStep
       });
+      return response.json();
     },
     onSuccess: (data) => {
       if (data?.response) {
@@ -137,15 +136,12 @@ const AIAssistant = ({
       message: string; 
       toDialect: keyof typeof supportedDialects;
     }) => {
-      return apiRequest('/api/assistant/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          fromDialect: dialect,
-          toDialect
-        }),
+      const response = await apiRequest('POST', '/api/assistant/translate', {
+        message,
+        fromDialect: dialect,
+        toDialect
       });
+      return response.json();
     },
     onSuccess: (data, variables) => {
       if (data?.translated) {
