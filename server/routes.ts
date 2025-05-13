@@ -262,6 +262,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: 'Failed to fetch barangays' });
     }
   });
+  
+  // ElevenLabs voice API endpoints
+  app.post('/api/tts', async (req: Request, res: Response) => {
+    try {
+      const { text, voice_id, model_id, stability, similarity_boost, style, use_speaker_boost } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ message: 'Text is required' });
+      }
+      
+      const audioUrl = await elevenlabsService.textToSpeech({
+        text,
+        voice_id,
+        model_id,
+        stability,
+        similarity_boost,
+        style,
+        use_speaker_boost
+      });
+      
+      return res.json({ audioUrl });
+    } catch (error) {
+      console.error('Error generating text-to-speech:', error);
+      return res.status(500).json({ message: 'Failed to generate audio' });
+    }
+  });
+  
+  app.get('/api/voices', async (_req: Request, res: Response) => {
+    try {
+      const voices = await elevenlabsService.getVoices();
+      return res.json(voices);
+    } catch (error) {
+      console.error('Error fetching voices:', error);
+      return res.status(500).json({ message: 'Failed to fetch voices' });
+    }
+  });
+  
+  // Welcome message text-to-speech endpoint
+  app.get('/api/welcome-message', async (req: Request, res: Response) => {
+    try {
+      const name = req.query.name as string || 'applicant';
+      
+      const welcomeMessage = `Hello ${name}, welcome to the PlataPay Agent Onboarding Platform. I'm Madam Lyn, and I'll guide you through your application process. Let's get started!`;
+      
+      const audioUrl = await elevenlabsService.textToSpeech({
+        text: welcomeMessage
+      });
+      
+      return res.json({ 
+        audioUrl,
+        text: welcomeMessage
+      });
+    } catch (error) {
+      console.error('Error generating welcome message:', error);
+      return res.status(500).json({ message: 'Failed to generate welcome message' });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import FormNavigation from "@/components/FormNavigation";
+import WelcomeAudio from "@/components/WelcomeAudio";
 import { Application } from "@shared/schema";
 
 const welcomeSchema = z.object({
@@ -45,6 +46,8 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Welcome to PlataPay Agent Onboarding</h2>
+      
+      <WelcomeAudio name={application?.firstName || ''} />
       
       <div className="prose prose-sm max-w-none mb-6">
         <p>
