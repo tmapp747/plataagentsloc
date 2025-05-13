@@ -11,8 +11,9 @@ import { insertApplicationSchema, insertDocumentSchema } from "@shared/schema";
 import { stepVoiceContent } from "@shared/voiceContent";
 import { elevenlabsService } from "./services/elevenlabs";
 import { db } from "./db";
-import { count, eq, ne, desc } from "drizzle-orm";
+import { count, eq, ne, desc, gte, lte, and } from "drizzle-orm";
 import { sql } from "drizzle-orm";
+import { convertApplicationsToCSV, generateCSVFilename } from "./utils/csvExport";
 import { 
   agentApplications, 
   regions, 
@@ -641,6 +642,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching admin statistics:', error);
       return res.status(500).json({ message: 'Failed to fetch statistics' });
+    }
+  });
+
+  // Export applications as CSV
+  app.get('/api/admin/export-csv', async (req: Request, res: Response) => {
+    try {
+      // Get filter parameters
+      const status = req.query.status as string | undefined;
+      const dateFrom = req.query.dateFrom as string | undefined;
+      const dateTo = req.query.dateTo as string | undefined;
+      
+      // Build database query
+      let query = db.select().from(agentApplications)
+        .where(sql`1=1`);  // Dummy condition to start with
+      
+      // Add filters if provided
+      if (status && status !== 'all') {
+        query = query.where(eq(agentApplications.status, status));
+      }
+      
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        query = query.where(gte(agentApplications.createdAt, fromDate));
+      }
+      
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        // Set time to end of day
+        toDate.setHours(23, 59, 59, 999);
+        query = query.where(lte(agentApplications.createdAt, toDate));
+      }
+      
+      // Execute query
+      const applications = await query.orderBy(desc(agentApplications.createdAt));
+      
+      // Generate CSV content
+      const csvContent = convertApplicationsToCSV(applications);
+      const filename = generateCSVFilename();
+      
+      // Set headers for file download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+      
+      // Send CSV content
+      return res.send(csvContent);
+    } catch (error) {
+      console.error('Error exporting applications to CSV:', error);
+      return res.status(500).json({ message: 'Failed to export applications to CSV' });
     }
   });
 
