@@ -7,16 +7,38 @@ import { VoiceSettings } from './VoiceSettings';
 interface WelcomeAudioProps {
   name?: string;
   voiceSettings?: VoiceSettings;
+  autoPlay?: boolean;
 }
 
-const WelcomeAudio = ({ name = '', voiceSettings }: WelcomeAudioProps) => {
+const WelcomeAudio = ({ name = '', voiceSettings, autoPlay = true }: WelcomeAudioProps) => {
   const { play, stop, isPlaying, isLoading } = useTextToSpeech();
   
-  // Welcome message with personalization
+  // Welcome message with personalization in Tagalog
   const getWelcomeMessage = () => {
-    const userName = name ? name : 'applicant';
-    return `Hello ${userName}, welcome to the PlataPay Agent Onboarding Platform. I'm Madam Lyn, and I'll guide you through your application process. Let's get started!`;
+    const userName = name ? name : 'aplikante';
+    return `Kumusta ${userName}, maligayang pagdating sa PlataPay Agent Onboarding Platform. Ako si Madam Lyn, at gagabayan kita sa proseso ng iyong aplikasyon. Magsimula na tayo!`;
   };
+  
+  // Auto-play welcome message on component mount
+  useEffect(() => {
+    if (autoPlay) {
+      console.log("Auto-playing welcome message on mount");
+      const settings = {
+        stability: voiceSettings?.stability || 0.5,
+        similarity_boost: voiceSettings?.similarityBoost || 0.75,
+        style: voiceSettings?.style || 0,
+        use_speaker_boost: voiceSettings?.useSpeakerBoost !== undefined ? voiceSettings.useSpeakerBoost : true
+      };
+      
+      // Slight delay to ensure the component is fully mounted
+      const timer = setTimeout(() => {
+        play(getWelcomeMessage(), settings);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, name, voiceSettings, play]);
   
   const togglePlayPause = () => {
     console.log('Toggle play/pause - current isPlaying state:', isPlaying);
@@ -59,7 +81,7 @@ const WelcomeAudio = ({ name = '', voiceSettings }: WelcomeAudioProps) => {
       </Button>
       <div className="text-sm text-gray-500 flex items-center gap-2">
         <Volume2 className="h-4 w-4 text-primary" />
-        <span>Listen to Madam Lyn's welcome message</span>
+        <span>Pakinggan ang mensahe ni Madam Lyn</span>
       </div>
     </div>
   );

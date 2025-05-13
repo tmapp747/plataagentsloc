@@ -7,8 +7,8 @@ import { nanoid } from 'nanoid';
 const writeFileAsync = promisify(fs.writeFile);
 
 // Default ElevenLabs voice ID
-// Using "Rachel" voice ID which is a standard ElevenLabs voice
-const MADAM_LYN_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL';
+// Using Madam Lyn's custom voice ID
+const MADAM_LYN_VOICE_ID = 'NgAcehsHf3YdZ2ERfilE';
 
 const audioDir = path.join(process.cwd(), 'uploads', 'audio');
 if (!fs.existsSync(audioDir)) {
