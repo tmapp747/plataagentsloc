@@ -14,7 +14,8 @@ import { sql } from "drizzle-orm";
 import { 
   agentApplications, 
   regions, 
-  provinces
+  provinces,
+  type Application
 } from "@shared/schema";
 import { anthropicService } from "./services/anthropic";
 
@@ -328,6 +329,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: 'Failed to generate welcome message' });
     }
   });
+  
+  // AI Assistant API endpoints
+  app.post('/api/assistant/chat', async (req: Request, res: Response) => {
+    try {
+      const { 
+        prompt, 
+        dialect = 'english',
+        applicationId,
+        currentStep = ''
+      } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ error: 'Prompt is required' });
+      }
+      
+      // Get application context if applicationId is provided
+      let context = null;
+      if (applicationId) {
+        const application = await storage.getApplicationById(applicationId);
+        if (application) {
+          context = {
+            applicationId: application.applicationId,
+            currentStep,
+            status: application.status,
+            progress: calculateApplicationProgress(application)
+          };
+        }
+      }
+      
+      const response = await anthropicService.getResponse(prompt, dialect, context);
+      res.json({ response });
+      
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      res.status(500).json({ error: 'Failed to generate AI response' });
+    }
+  });
+  
+  app.post('/api/assistant/translate', async (req: Request, res: Response) => {
+    try {
+      const { 
+        message,
+        fromDialect = 'english',
+        toDialect = 'tagalog'
+      } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+      
+      const translatedMessage = await anthropicService.translateToDialect(
+        message,
+        fromDialect,
+        toDialect
+      );
+      
+      res.json({ 
+        original: message,
+        translated: translatedMessage,
+        fromDialect,
+        toDialect
+      });
+      
+    } catch (error) {
+      console.error('Error translating message:', error);
+      res.status(500).json({ error: 'Failed to translate message' });
+    }
+  });
+  
+  // Calculate the approximate progress of an application
+  function calculateApplicationProgress(application: Application): string {
+    const totalSteps = 7; // Total number of major steps
+    let completedSteps = 0;
+    
+    // Check which steps are completed
+    if (application.firstName && application.lastName && application.email) completedSteps++;
+    if (application.idType && application.idNumber) completedSteps++;
+    if (application.businessExperience || application.currentOccupation) completedSteps++;
+    if (application.address && application.address.street) completedSteps++;
+    if (application.selectedPackage) completedSteps++;
+    if (application.documentsUploaded) completedSteps++;
+    if (application.signatureUrl && application.termsAccepted) completedSteps++;
+    
+    const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
+    return `${progressPercentage}%`;
+  }
   
   // Admin API endpoints
   app.get('/api/admin/statistics', async (req: Request, res: Response) => {

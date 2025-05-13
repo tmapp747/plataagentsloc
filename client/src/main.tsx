@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import ApplicationPage from "./pages/ApplicationPage";
 import ResumeApplication from "./pages/ResumeApplication";
 import NotFound from "./pages/not-found";
+import EmbedForm from "./pages/EmbedForm";
+import AdminPanel from "./pages/AdminPanel";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +26,14 @@ const router = createBrowserRouter([
       {
         path: "resume/:token",
         element: <ResumeApplication />,
+      },
+      {
+        path: "embed",
+        element: <EmbedForm />,
+      },
+      {
+        path: "admin",
+        element: <AdminPanel />,
       },
     ],
   },
