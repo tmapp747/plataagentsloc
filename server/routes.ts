@@ -85,42 +85,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   app.get('/api/applications/:id', async (req: Request, res: Response) => {
-    try {
-      const applicationId = req.params.id;
-      const application = await storage.getApplicationById(applicationId);
-      
-      if (!application) {
-        return res.status(404).json({ message: 'Application not found' });
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const applicationId = req.params.id;
+        const application = await storage.getApplicationById(applicationId);
+        
+        if (!application) {
+          return res.status(404).json({ message: 'Application not found' });
+        }
+        
+        return res.json(application);
+      } catch (error: any) {
+        console.error('Error fetching application:', error);
+        
+        // If this is a database connection error, retry
+        if (error.code === 'XX000' && error.message && error.message.includes('Control plane request failed')) {
+          retries--;
+          if (retries > 0) {
+            console.log(`Database connection error, retrying... (${retries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+            continue;
+          }
+        }
+        
+        return res.status(500).json({ 
+          message: 'Failed to fetch application',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
       }
-      
-      return res.json(application);
-    } catch (error) {
-      console.error('Error fetching application:', error);
-      return res.status(500).json({ message: 'Failed to fetch application' });
     }
   });
   
   app.patch('/api/applications/:id', async (req: Request, res: Response) => {
-    try {
-      const applicationId = req.params.id;
-      const application = await storage.getApplicationById(applicationId);
-      
-      if (!application) {
-        return res.status(404).json({ message: 'Application not found' });
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const applicationId = req.params.id;
+        const application = await storage.getApplicationById(applicationId);
+        
+        if (!application) {
+          return res.status(404).json({ message: 'Application not found' });
+        }
+        
+        // Validate the update data
+        const updateData = insertApplicationSchema.partial().parse(req.body);
+        
+        const updatedApplication = await storage.updateApplication(
+          application.id,
+          updateData
+        );
+        
+        return res.json(updatedApplication);
+      } catch (error: any) {
+        console.error('Error updating application:', error);
+        
+        // If this is a database connection error, retry
+        if (error.code === 'XX000' && error.message && error.message.includes('Control plane request failed')) {
+          retries--;
+          if (retries > 0) {
+            console.log(`Database connection error, retrying... (${retries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+            continue;
+          }
+        }
+        
+        return res.status(500).json({ 
+          message: 'Failed to update application',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
       }
-      
-      // Validate the update data
-      const updateData = insertApplicationSchema.partial().parse(req.body);
-      
-      const updatedApplication = await storage.updateApplication(
-        application.id,
-        updateData
-      );
-      
-      return res.json(updatedApplication);
-    } catch (error) {
-      console.error('Error updating application:', error);
-      return res.status(500).json({ message: 'Failed to update application' });
     }
   });
   

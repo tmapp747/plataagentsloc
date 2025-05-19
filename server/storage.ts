@@ -86,11 +86,31 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getApplicationById(applicationId: string): Promise<Application | undefined> {
-    const [application] = await db
-      .select()
-      .from(agentApplications)
-      .where(eq(agentApplications.applicationId, applicationId));
-    return application || undefined;
+    // Implement retry mechanism for database queries
+    const maxRetries = 3;
+    let retryCount = 0;
+    let lastError;
+
+    while (retryCount < maxRetries) {
+      try {
+        const [application] = await db
+          .select()
+          .from(agentApplications)
+          .where(eq(agentApplications.applicationId, applicationId));
+        return application || undefined;
+      } catch (error) {
+        lastError = error;
+        retryCount++;
+        console.log(`Database query failed, attempt ${retryCount}/${maxRetries}`);
+        
+        // Wait a bit longer between each retry
+        await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+      }
+    }
+    
+    // If we've exhausted all retries, throw the last error
+    console.error("All database query attempts failed:", lastError);
+    throw lastError;
   }
   
   async getApplicationByResumeToken(token: string): Promise<Application | undefined> {
@@ -102,28 +122,68 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateApplication(id: number, data: Partial<InsertApplication>): Promise<Application> {
-    const [updatedApplication] = await db
-      .update(agentApplications)
-      .set({
-        ...data,
-        updatedAt: new Date(),
-      })
-      .where(eq(agentApplications.id, id))
-      .returning();
-    return updatedApplication;
+    // Implement retry mechanism for database updates
+    const maxRetries = 3;
+    let retryCount = 0;
+    let lastError;
+
+    while (retryCount < maxRetries) {
+      try {
+        const [updatedApplication] = await db
+          .update(agentApplications)
+          .set({
+            ...data,
+            updatedAt: new Date(),
+          })
+          .where(eq(agentApplications.id, id))
+          .returning();
+        return updatedApplication;
+      } catch (error) {
+        lastError = error;
+        retryCount++;
+        console.log(`Database update failed, attempt ${retryCount}/${maxRetries}`);
+        
+        // Wait a bit longer between each retry
+        await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+      }
+    }
+    
+    // If we've exhausted all retries, throw the last error
+    console.error("All database update attempts failed:", lastError);
+    throw lastError;
   }
   
   async submitApplication(id: number): Promise<Application> {
-    const [submittedApplication] = await db
-      .update(agentApplications)
-      .set({
-        status: 'submitted',
-        submitDate: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(agentApplications.id, id))
-      .returning();
-    return submittedApplication;
+    // Implement retry mechanism for database submission
+    const maxRetries = 3;
+    let retryCount = 0;
+    let lastError;
+
+    while (retryCount < maxRetries) {
+      try {
+        const [submittedApplication] = await db
+          .update(agentApplications)
+          .set({
+            status: 'submitted',
+            submitDate: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(agentApplications.id, id))
+          .returning();
+        return submittedApplication;
+      } catch (error) {
+        lastError = error;
+        retryCount++;
+        console.log(`Database submission failed, attempt ${retryCount}/${maxRetries}`);
+        
+        // Wait a bit longer between each retry
+        await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+      }
+    }
+    
+    // If we've exhausted all retries, throw the last error
+    console.error("All database submission attempts failed:", lastError);
+    throw lastError;
   }
   
   // Document operations
