@@ -43,14 +43,40 @@ const ApplicationForm = () => {
 
   const updateApplicationMutation = useMutation({
     mutationFn: async ({ step, data }: { step: number; data: any }) => {
-      return apiRequest("PATCH", `/api/applications/${applicationId}`, {
-        ...data,
-        lastStep: step,
-      });
+      // Implement retry logic for API requests on the client side
+      let attempts = 0;
+      const maxAttempts = 3;
+      let lastError;
+      
+      while (attempts < maxAttempts) {
+        try {
+          const response = await apiRequest("PATCH", `/api/applications/${applicationId}`, {
+            ...data,
+            lastStep: step,
+          });
+          
+          return response;
+        } catch (error) {
+          lastError = error;
+          attempts++;
+          
+          if (attempts < maxAttempts) {
+            // Wait a bit before retrying (increasing delay)
+            await new Promise(resolve => setTimeout(resolve, attempts * 1000));
+            console.log(`Retrying form update, attempt ${attempts}/${maxAttempts}`);
+          }
+        }
+      }
+      
+      // If we've exhausted all retries, throw the last error
+      throw lastError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/applications/${applicationId}`] });
     },
+    onError: (error) => {
+      console.error("Error updating application data:", error);
+    }
   });
 
   const submitApplicationMutation = useMutation({
