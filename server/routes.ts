@@ -692,24 +692,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add filters if provided
       if (status && status !== 'all') {
-        whereConditions.push(eq(agentApplications.status, status));
+        whereConditions.push(sql`${agentApplications.status} = ${status}`);
       }
       
       if (dateFrom) {
         const fromDate = new Date(dateFrom);
-        whereConditions.push(gte(agentApplications.createdAt, fromDate));
+        whereConditions.push(sql`${agentApplications.createdAt} >= ${fromDate}`);
       }
       
       if (dateTo) {
         const toDate = new Date(dateTo);
         // Set time to end of day
         toDate.setHours(23, 59, 59, 999);
-        whereConditions.push(lte(agentApplications.createdAt, toDate));
+        whereConditions.push(sql`${agentApplications.createdAt} <= ${toDate}`);
       }
       
       // Combine all conditions with AND
       const query = whereConditions.length > 0
-        ? db.select().from(agentApplications).where(and(...whereConditions))
+        ? db.select().from(agentApplications).where(sql`${sql.join(whereConditions, sql` AND `)}`)
         : db.select().from(agentApplications);
       
       // Execute query
