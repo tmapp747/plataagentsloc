@@ -8,6 +8,7 @@ import ResumeApplication from "./pages/ResumeApplication";
 import NotFound from "./pages/not-found";
 import EmbedForm from "./pages/EmbedForm";
 import AdminPanel from "./pages/AdminPanel";
+import FormTester from "./pages/FormTester";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminPanel />,
+      },
+      {
+        path: "test",
+        element: <FormTester />,
       },
     ],
   },
