@@ -605,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const applications = await db
         .select()
         .from(agentApplications)
-        .where(ne(agentApplications.status, 'draft'))
+        .where(sql`${agentApplications.status} != 'draft'`)
         .orderBy(desc(agentApplications.updatedAt));
         
       return res.json(applications);
@@ -687,26 +687,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateFrom = req.query.dateFrom as string | undefined;
       const dateTo = req.query.dateTo as string | undefined;
       
-      // Build database query
-      let query = db.select().from(agentApplications)
-        .where(sql`1=1`);  // Dummy condition to start with
+      // Build database query with filters
+      let whereConditions = [];
       
       // Add filters if provided
       if (status && status !== 'all') {
-        query = query.where(eq(agentApplications.status, status));
+        whereConditions.push(eq(agentApplications.status, status));
       }
       
       if (dateFrom) {
         const fromDate = new Date(dateFrom);
-        query = query.where(gte(agentApplications.createdAt, fromDate));
+        whereConditions.push(gte(agentApplications.createdAt, fromDate));
       }
       
       if (dateTo) {
         const toDate = new Date(dateTo);
         // Set time to end of day
         toDate.setHours(23, 59, 59, 999);
-        query = query.where(lte(agentApplications.createdAt, toDate));
+        whereConditions.push(lte(agentApplications.createdAt, toDate));
       }
+      
+      // Combine all conditions with AND
+      const query = whereConditions.length > 0
+        ? db.select().from(agentApplications).where(and(...whereConditions))
+        : db.select().from(agentApplications);
       
       // Execute query
       const applications = await query.orderBy(desc(agentApplications.createdAt));
