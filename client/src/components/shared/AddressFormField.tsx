@@ -26,39 +26,59 @@ const AddressFormField = ({
   showLatLong = false,
   required = true,
 }: AddressFormFieldProps) => {
+  // State to track selections by code
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(address.region);
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>(address.province);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(address.city);
+
+  // State to track IDs for API calls
+  const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
+  const [selectedProvinceId, setSelectedProvinceId] = useState<number | undefined>();
+  const [selectedCityId, setSelectedCityId] = useState<number | undefined>();
+
+  // Maps to store relationships between names and IDs
+  const [regionNameToIdMap, setRegionNameToIdMap] = useState<Record<string, number>>({});
+  const [provinceNameToIdMap, setProvinceNameToIdMap] = useState<Record<string, number>>({});
+  const [cityNameToIdMap, setCityNameToIdMap] = useState<Record<string, number>>({});
 
   // Fetch regions
   const { data: regions, isLoading: regionsLoading } = useQuery({
     queryKey: ['/api/regions'],
   });
 
-  // Map of region codes to region IDs for API calls
-  const [regionIdMap, setRegionIdMap] = useState<Record<string, number>>({});
-  // Map of province codes to province IDs for API calls
-  const [provinceIdMap, setProvinceIdMap] = useState<Record<string, number>>({});
-  // Map of city codes to city IDs for API calls
-  const [cityIdMap, setCityIdMap] = useState<Record<string, number>>({});
-
-  // Update region ID map when regions data is loaded
+  // Build region name to ID mapping when regions data is loaded
   useEffect(() => {
-    if (regions) {
-      const newMap: Record<string, number> = {};
+    if (regions && Array.isArray(regions)) {
+      const nameToIdMap: Record<string, number> = {};
       regions.forEach((region: any) => {
-        newMap[region.code] = region.id;
+        nameToIdMap[region.name] = region.id;
       });
-      setRegionIdMap(newMap);
+      setRegionNameToIdMap(nameToIdMap);
     }
   }, [regions]);
 
-  // Get the region ID from the code
-  const selectedRegionId = selectedRegion ? regionIdMap[selectedRegion] : undefined;
+  // Update region selection when value changes externally
+  useEffect(() => {
+    if (address?.region && address.region !== selectedRegion) {
+      setSelectedRegion(address.region);
+
+      // Try to find the region ID from our mapping
+      if (regionNameToIdMap[address.region]) {
+        setSelectedRegionId(regionNameToIdMap[address.region]);
+      }
+      // If not in our mapping but regions data is available, look it up
+      else if (regions) {
+        const region = regions.find((r: any) => r.name === address.region);
+        if (region) {
+          setSelectedRegionId(region.id);
+        }
+      }
+    }
+  }, [address?.region, regions, selectedRegion, regionNameToIdMap]);
 
   // Fetch provinces based on selected region ID
   const { data: provinces, isLoading: provincesLoading } = useQuery({
-    queryKey: ['/api/provinces'],
+    queryKey: ['/api/provinces', selectedRegionId],
     queryFn: async () => {
       if (!selectedRegionId) return [];
       const response = await fetch(`/api/provinces?regionId=${selectedRegionId}`);
@@ -68,23 +88,28 @@ const AddressFormField = ({
     enabled: !!selectedRegionId,
   });
 
-  // Update province ID map when provinces data is loaded
+  // Update province name to ID mapping when provinces data is loaded
   useEffect(() => {
-    if (provinces) {
-      const newMap: Record<string, number> = {};
+    if (provinces && Array.isArray(provinces)) {
+      const nameToIdMap: Record<string, number> = {};
       provinces.forEach((province: any) => {
-        newMap[province.code] = province.id;
+        nameToIdMap[province.name] = province.id;
       });
-      setProvinceIdMap(newMap);
+      setProvinceNameToIdMap(nameToIdMap);
     }
   }, [provinces]);
 
-  // Get the province ID from the code
-  const selectedProvinceId = selectedProvince ? provinceIdMap[selectedProvince] : undefined;
+    // Update province selection based on external value changes
+  useEffect(() => {
+    if (address?.province && address.province !== selectedProvince) {
+      setSelectedProvince(address.province);
+      // If current province is selected, update its ID
+    }
+  }, [address?.province, provinces, selectedProvince]);
 
   // Fetch cities based on selected province ID
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ['/api/cities'],
+    queryKey: ['/api/cities', selectedProvinceId],
     queryFn: async () => {
       if (!selectedProvinceId) return [];
       const response = await fetch(`/api/cities?provinceId=${selectedProvinceId}`);
@@ -94,23 +119,32 @@ const AddressFormField = ({
     enabled: !!selectedProvinceId,
   });
 
-  // Update city ID map when cities data is loaded
+  // Update city name to ID mapping when cities data is loaded
   useEffect(() => {
-    if (cities) {
-      const newMap: Record<string, number> = {};
+    if (cities && Array.isArray(cities)) {
+      const nameToIdMap: Record<string, number> = {};
       cities.forEach((city: any) => {
-        newMap[city.code] = city.id;
+        nameToIdMap[city.name] = city.id;
       });
-      setCityIdMap(newMap);
-    }
-  }, [cities]);
+      setCityNameToIdMap(nameToIdMap);
 
-  // Get the city ID from the code
-  const selectedCityId = selectedCity ? cityIdMap[selectedCity] : undefined;
+      // If current city is selected, update its ID
+      if (selectedCity) {
+        setSelectedCityId(cityNameToIdMap[selectedCity]);
+      }
+    }
+  }, [cities, selectedCity, cityNameToIdMap]);
+
+  // Update city selection based on external value changes
+  useEffect(() => {
+    if (address?.city && address.city !== selectedCity) {
+      setSelectedCity(address.city);
+    }
+  }, [address?.city, cities, selectedCity, cityNameToIdMap]);
 
   // Fetch barangays based on selected city ID
   const { data: barangays, isLoading: barangaysLoading } = useQuery({
-    queryKey: ['/api/barangays'],
+    queryKey: ['/api/barangays', selectedCityId],
     queryFn: async () => {
       if (!selectedCityId) return [];
       const response = await fetch(`/api/barangays?cityId=${selectedCityId}`);
@@ -120,10 +154,27 @@ const AddressFormField = ({
     enabled: !!selectedCityId,
   });
 
+  // Update barangay name to ID mapping when barangays data is loaded
+  useEffect(() => {
+    if (barangays && Array.isArray(barangays)) {
+      const nameToIdMap: Record<string, number> = {};
+      barangays.forEach((barangay: any) => {
+        nameToIdMap[barangay.name] = barangay.id;
+      });
+    }
+  }, [barangays]);
+
+  // Update barangay selection based on external value changes
+  useEffect(() => {
+    if (address?.barangay && address.barangay !== selectedCity) {
+      setSelectedCity(address.barangay);
+    }
+  }, [address?.barangay, selectedCity]);
+
   // Update the address when a selection changes
   const handleAddressChange = (field: keyof Address, value: any) => {
     const updatedAddress = { ...address, [field]: value };
-    
+
     // Reset dependent fields when parent changes
     if (field === 'region') {
       setSelectedRegion(value);
@@ -141,7 +192,7 @@ const AddressFormField = ({
       setSelectedCity(value);
       updatedAddress.barangay = undefined;
     }
-    
+
     onChange(updatedAddress);
   };
 
@@ -164,7 +215,7 @@ const AddressFormField = ({
               <SelectContent>
                 <SelectGroup>
                   {regions?.map((region: any) => (
-                    <SelectItem key={region.id} value={region.code}>
+                    <SelectItem key={region.id} value={region.name}>
                       {region.name}
                     </SelectItem>
                   ))}
@@ -190,7 +241,7 @@ const AddressFormField = ({
               <SelectContent>
                 <SelectGroup>
                   {provinces?.map((province: any) => (
-                    <SelectItem key={province.id} value={province.code}>
+                    <SelectItem key={province.id} value={province.name}>
                       {province.name}
                     </SelectItem>
                   ))}
@@ -219,7 +270,7 @@ const AddressFormField = ({
               <SelectContent>
                 <SelectGroup>
                   {cities?.map((city: any) => (
-                    <SelectItem key={city.id} value={city.code}>
+                    <SelectItem key={city.id} value={city.name}>
                       {city.name}
                     </SelectItem>
                   ))}
@@ -245,7 +296,7 @@ const AddressFormField = ({
               <SelectContent>
                 <SelectGroup>
                   {barangays?.map((barangay: any) => (
-                    <SelectItem key={barangay.id} value={barangay.code}>
+                    <SelectItem key={barangay.id} value={barangay.name}>
                       {barangay.name}
                     </SelectItem>
                   ))}
