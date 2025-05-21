@@ -24,6 +24,7 @@ import { anthropicService } from "./services/anthropic";
 import { emailService } from "./services/email";
 import { prerecordedAudioService } from "./services/prerecordedAudio";
 import { openaiService } from "./services/openai";
+import { locationService } from "./services/locationService";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -292,10 +293,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Location endpoints
+  // Location endpoints using external API service
   app.get('/api/regions', async (_req: Request, res: Response) => {
     try {
-      const regions = await storage.getAllRegions();
+      const regions = await locationService.getAllRegions();
       return res.json(regions);
     } catch (error) {
       console.error('Error fetching regions:', error);
@@ -311,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid region ID' });
       }
       
-      const provinces = await storage.getProvincesByRegion(regionId);
+      const provinces = await locationService.getProvincesByRegion(regionId);
       return res.json(provinces);
     } catch (error) {
       console.error('Error fetching provinces:', error);
@@ -327,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid province ID' });
       }
       
-      const cities = await storage.getCitiesByProvince(provinceId);
+      const cities = await locationService.getCitiesByProvince(provinceId);
       return res.json(cities);
     } catch (error) {
       console.error('Error fetching cities:', error);
@@ -343,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid city ID' });
       }
       
-      const barangays = await storage.getBarangaysByCity(cityId);
+      const barangays = await locationService.getBarangaysByCity(cityId);
       return res.json(barangays);
     } catch (error) {
       console.error('Error fetching barangays:', error);
