@@ -58,7 +58,7 @@ const AddressFormField = ({
 
   // Fetch provinces based on selected region ID
   const { data: provinces, isLoading: provincesLoading } = useQuery({
-    queryKey: ['/api/provinces', { regionId: selectedRegionId }],
+    queryKey: ['/api/provinces', selectedRegionId],
     enabled: !!selectedRegionId,
   });
 
@@ -79,7 +79,7 @@ const AddressFormField = ({
 
   // Fetch cities based on selected province ID
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ['/api/cities', { provinceId: selectedProvinceId }],
+    queryKey: ['/api/cities', selectedProvinceId],
     enabled: !!selectedProvinceId,
   });
 
@@ -100,7 +100,7 @@ const AddressFormField = ({
 
   // Fetch barangays based on selected city ID
   const { data: barangays, isLoading: barangaysLoading } = useQuery({
-    queryKey: ['/api/barangays', { cityId: selectedCityId }],
+    queryKey: ['/api/barangays', selectedCityId],
     enabled: !!selectedCityId,
   });
 
