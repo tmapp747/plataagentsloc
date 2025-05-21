@@ -28,7 +28,6 @@ import FormNavigation from "@/components/FormNavigation";
 import FormSaveContinue from "@/components/FormSaveContinue";
 import FormValidationSummary from "@/components/FormValidationSummary";
 import { Application } from "@shared/schema";
-import { useBusinessTypes, useBusinessNatures, useYearsOperating, useDailyTransactions } from "@/hooks/useValidationData";
 
 type BusinessInfoData = z.infer<typeof businessInfoSchema>;
 
@@ -50,12 +49,6 @@ const BusinessExperience = ({
   isLoading = false,
 }: BusinessExperienceProps) => {
   const [validationSuccess, setValidationSuccess] = useState(false);
-  
-  // Fetch validation data from the API
-  const { data: businessTypes, isLoading: isLoadingBusinessTypes } = useBusinessTypes();
-  const { data: businessNatures, isLoading: isLoadingBusinessNatures } = useBusinessNatures();
-  const { data: yearsOperating, isLoading: isLoadingYearsOperating } = useYearsOperating();
-  const { data: dailyTransactions, isLoading: isLoadingDailyTransactions } = useDailyTransactions();
 
   // Set default values from the application data if available
   const defaultValues: Partial<BusinessInfoData> = {
@@ -139,17 +132,17 @@ const BusinessExperience = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {isLoadingBusinessTypes ? (
-                        <SelectItem value="loading">Loading...</SelectItem>
-                      ) : (
-                        businessTypes?.map((type: string) => (
-                          <SelectItem key={type} value={type}>
-                            {type.split('_').map((word: string) => 
-                              word.charAt(0).toUpperCase() + word.slice(1)
-                            ).join(' ')}
-                          </SelectItem>
-                        ))
-                      )}
+                      <SelectItem value="retail">Retail</SelectItem>
+                      <SelectItem value="financial_services">Financial Services</SelectItem>
+                      <SelectItem value="food_and_beverage">Food and Beverage</SelectItem>
+                      <SelectItem value="sari_sari_store">Sari-Sari Store</SelectItem>
+                      <SelectItem value="electronic_shop">Electronic Shop</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="transportation">Transportation</SelectItem>
+                      <SelectItem value="remittance">Remittance</SelectItem>
+                      <SelectItem value="grocery">Grocery</SelectItem>
+                      <SelectItem value="pharmacy">Pharmacy</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -171,17 +164,16 @@ const BusinessExperience = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {isLoadingBusinessNatures ? (
-                      <SelectItem value="loading">Loading...</SelectItem>
-                    ) : (
-                      businessNatures?.map((nature: string) => (
-                        <SelectItem key={nature} value={nature}>
-                          {nature.split('_').map((word: string) => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(' ')}
-                        </SelectItem>
-                      ))
-                    )}
+                    <SelectItem value="micro_enterprise">Micro Enterprise</SelectItem>
+                    <SelectItem value="small_business">Small Business</SelectItem>
+                    <SelectItem value="medium_enterprise">Medium Enterprise</SelectItem>
+                    <SelectItem value="sole_proprietorship">Sole Proprietorship</SelectItem>
+                    <SelectItem value="partnership">Partnership</SelectItem>
+                    <SelectItem value="corporation">Corporation</SelectItem>
+                    <SelectItem value="cooperative">Cooperative</SelectItem>
+                    <SelectItem value="franchise">Franchise</SelectItem>
+                    <SelectItem value="startup">Startup</SelectItem>
+                    <SelectItem value="home_based">Home Based</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -203,17 +195,11 @@ const BusinessExperience = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {isLoadingYearsOperating ? (
-                        <SelectItem value="loading">Loading...</SelectItem>
-                      ) : (
-                        yearsOperating?.map((years: string) => (
-                          <SelectItem key={years} value={years}>
-                            {years === "0-1" ? "Less than 1 year" : 
-                             years === "10+" ? "More than 10 years" :
-                             `${years} years`}
-                          </SelectItem>
-                        ))
-                      )}
+                      <SelectItem value="0-1">Less than 1 year</SelectItem>
+                      <SelectItem value="1-3">1-3 years</SelectItem>
+                      <SelectItem value="3-5">3-5 years</SelectItem>
+                      <SelectItem value="5-10">5-10 years</SelectItem>
+                      <SelectItem value="10+">More than 10 years</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -233,17 +219,11 @@ const BusinessExperience = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {isLoadingDailyTransactions ? (
-                        <SelectItem value="loading">Loading...</SelectItem>
-                      ) : (
-                        dailyTransactions?.map((transaction: string) => (
-                          <SelectItem key={transaction} value={transaction}>
-                            {transaction === "less_than_10" ? "Less than 10" : 
-                             transaction === "500+" ? "More than 500" :
-                             transaction.replace('_', '-')}
-                          </SelectItem>
-                        ))
-                      )}
+                      <SelectItem value="less_than_10">Less than 10</SelectItem>
+                      <SelectItem value="10-50">10-50</SelectItem>
+                      <SelectItem value="50-100">50-100</SelectItem>
+                      <SelectItem value="100-500">100-500</SelectItem>
+                      <SelectItem value="500+">More than 500</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

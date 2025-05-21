@@ -366,50 +366,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get business types
-  app.get('/api/business-types', async (_req: Request, res: Response) => {
-    try {
-      const businessTypes = await validationService.getBusinessTypes();
-      return res.json(businessTypes);
-    } catch (error) {
-      console.error('Error fetching business types:', error);
-      return res.status(500).json({ message: 'Failed to fetch business types' });
-    }
-  });
-  
-  // Get business natures
-  app.get('/api/business-natures', async (_req: Request, res: Response) => {
-    try {
-      const businessNatures = await validationService.getBusinessNatures();
-      return res.json(businessNatures);
-    } catch (error) {
-      console.error('Error fetching business natures:', error);
-      return res.status(500).json({ message: 'Failed to fetch business natures' });
-    }
-  });
-  
-  // Get years operating options
-  app.get('/api/years-operating', async (_req: Request, res: Response) => {
-    try {
-      const yearsOperating = await validationService.getYearsOperating();
-      return res.json(yearsOperating);
-    } catch (error) {
-      console.error('Error fetching years operating options:', error);
-      return res.status(500).json({ message: 'Failed to fetch years operating options' });
-    }
-  });
-  
-  // Get daily transactions options
-  app.get('/api/daily-transactions', async (_req: Request, res: Response) => {
-    try {
-      const dailyTransactions = await validationService.getDailyTransactions();
-      return res.json(dailyTransactions);
-    } catch (error) {
-      console.error('Error fetching daily transactions options:', error);
-      return res.status(500).json({ message: 'Failed to fetch daily transactions options' });
-    }
-  });
-  
   // Get package types
   app.get('/api/package-types', async (_req: Request, res: Response) => {
     try {
