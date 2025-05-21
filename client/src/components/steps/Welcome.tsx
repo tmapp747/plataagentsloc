@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import FormNavigation from "@/components/FormNavigation";
 import WelcomeAudio from "@/components/WelcomeAudio";
 import VoiceSettings, { VoiceSettings as VoiceSettingsType } from "@/components/VoiceSettings";
+import LegalDocumentModal from "@/components/shared/LegalDocumentModal";
+import { privacyPolicyContent, termsAndConditionsContent } from "@/lib/legalContent";
 import { Application } from "@shared/schema";
 
 const welcomeSchema = z.object({
@@ -127,10 +129,13 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
         <div className="rounded-md border border-primary/20 bg-primary/5 p-4 mb-6">
           <h3 className="text-lg font-medium text-primary mb-2">Privacy Notice</h3>
           <p className="text-sm text-foreground">
-            PlataPay values your privacy and will handle your information in accordance with our 
-            <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline"> 
-              Privacy Policy
-            </a>. The information collected through this application will be used for 
+            PlataPay values your privacy and will handle your information in accordance with our{" "}
+            <LegalDocumentModal 
+              triggerText="Privacy Policy"
+              title="Privacy Policy"
+              content={privacyPolicyContent}
+            />
+            . The information collected through this application will be used for 
             the purposes of evaluating your eligibility to become a PlataPay financial agent.
           </p>
         </div>
@@ -151,7 +156,18 @@ const Welcome = ({ application, onNext, isLoading = false }: WelcomeProps) => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    I have read and accept the <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Terms & Conditions</a> and <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Privacy Policy</a>
+                    I have read and accept the{" "}
+                    <LegalDocumentModal 
+                      triggerText="Terms & Conditions"
+                      title="Terms and Conditions"
+                      content={termsAndConditionsContent}
+                    />
+                    {" "}and{" "}
+                    <LegalDocumentModal 
+                      triggerText="Privacy Policy"
+                      title="Privacy Policy"
+                      content={privacyPolicyContent}
+                    />
                   </FormLabel>
                   <FormDescription>
                     You must agree to continue with the application process
