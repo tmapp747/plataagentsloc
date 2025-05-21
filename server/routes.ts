@@ -28,6 +28,7 @@ import { openaiService } from "./services/openai";
 import { locationService } from "./services/locationService";
 import { validationService } from "./services/validationService";
 import { aiEmailAgent } from "./services/aiEmailAgent";
+import * as testEmailService from "./services/testEmailService";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -681,8 +682,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Generate personalized email content using AI
         const personalizedContent = await aiEmailAgent.generatePersonalizedEmail(applicantData);
         
-        // Create email object with personalized content
-        const success = await sendgridService.sendPersonalizedWelcomeEmail(
+        // Using test email service for development testing
+        // In production, you would use sendgridService instead
+        const success = await testEmailService.sendPersonalizedWelcomeEmail(
           email,
           personalizedContent,
           applicantData.applicationId,

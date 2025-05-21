@@ -150,17 +150,15 @@ const PersonalInfo = ({
       const dataUrl = canvas.toDataURL('image/png');
       
       // Send the personalized welcome email with QR code
-      const response = await fetch('/api/send-personalized-welcome', {
+      const response = await fetch('/api/send-qr-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          applicationId,
           email: data.email,
           qrCodeImage: dataUrl,
-          resumeUrl,
-          personalInfo: data
+          resumeUrl
         }),
       });
       
