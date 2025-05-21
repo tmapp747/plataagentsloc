@@ -139,11 +139,17 @@ const BusinessExperience = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="sole_proprietorship">Sole Proprietorship</SelectItem>
-                      <SelectItem value="partnership">Partnership</SelectItem>
-                      <SelectItem value="corporation">Corporation</SelectItem>
-                      <SelectItem value="llc">LLC</SelectItem>
-                      <SelectItem value="not_yet_established">Not Yet Established</SelectItem>
+                      {isLoadingBusinessTypes ? (
+                        <SelectItem value="loading">Loading...</SelectItem>
+                      ) : (
+                        businessTypes?.map((type: string) => (
+                          <SelectItem key={type} value={type}>
+                            {type.split('_').map((word: string) => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(' ')}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -165,12 +171,17 @@ const BusinessExperience = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="retail">Retail</SelectItem>
-                    <SelectItem value="service">Service</SelectItem>
-                    <SelectItem value="food">Food & Beverage</SelectItem>
-                    <SelectItem value="tech">Technology</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    {isLoadingBusinessNatures ? (
+                      <SelectItem value="loading">Loading...</SelectItem>
+                    ) : (
+                      businessNatures?.map((nature: string) => (
+                        <SelectItem key={nature} value={nature}>
+                          {nature.split('_').map((word: string) => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(' ')}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -192,11 +203,17 @@ const BusinessExperience = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="not_yet">Not yet operational</SelectItem>
-                      <SelectItem value="less_than_1">Less than 1 year</SelectItem>
-                      <SelectItem value="1_to_3">1-3 years</SelectItem>
-                      <SelectItem value="3_to_5">3-5 years</SelectItem>
-                      <SelectItem value="5_plus">More than 5 years</SelectItem>
+                      {isLoadingYearsOperating ? (
+                        <SelectItem value="loading">Loading...</SelectItem>
+                      ) : (
+                        yearsOperating?.map((years: string) => (
+                          <SelectItem key={years} value={years}>
+                            {years === "0-1" ? "Less than 1 year" : 
+                             years === "10+" ? "More than 10 years" :
+                             `${years} years`}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -30,7 +30,7 @@ export function useIDTypes() {
  * Hook to fetch business types from validation service
  */
 export function useBusinessTypes() {
-  return useQuery({
+  return useQuery<string[]>({
     queryKey: ['/api/business-types'],
     staleTime: 1000 * 60 * 60, // 1 hour
   });
@@ -40,7 +40,7 @@ export function useBusinessTypes() {
  * Hook to fetch business natures from validation service
  */
 export function useBusinessNatures() {
-  return useQuery({
+  return useQuery<string[]>({
     queryKey: ['/api/business-natures'],
     staleTime: 1000 * 60 * 60, // 1 hour
   });
@@ -50,7 +50,7 @@ export function useBusinessNatures() {
  * Hook to fetch years operating options from validation service
  */
 export function useYearsOperating() {
-  return useQuery({
+  return useQuery<string[]>({
     queryKey: ['/api/years-operating'],
     staleTime: 1000 * 60 * 60, // 1 hour
   });
@@ -60,7 +60,7 @@ export function useYearsOperating() {
  * Hook to fetch daily transactions options from validation service
  */
 export function useDailyTransactions() {
-  return useQuery({
+  return useQuery<string[]>({
     queryKey: ['/api/daily-transactions'],
     staleTime: 1000 * 60 * 60, // 1 hour
   });
