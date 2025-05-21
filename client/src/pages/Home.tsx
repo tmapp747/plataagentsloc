@@ -81,24 +81,33 @@ const Home = () => {
             <p className="text-xl text-gray-800 max-w-2xl mx-auto mb-10">
               Join our growing network of financial service providers and empower your community
             </p>
-            <Button 
-              size="lg"
-              onClick={createApplication}
-              disabled={isCreating}
-              className="bg-primary hover:bg-primary/90 text-white font-medium py-6 px-8 rounded-md shadow-lg"
-            >
-              {isCreating ? (
-                <>
-                  <Clock className="mr-2 h-5 w-5 animate-spin" />
-                  Creating Application...
-                </>
-              ) : (
-                <>
-                  Start Your Application
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button 
+                size="lg"
+                onClick={createApplication}
+                disabled={isCreating}
+                className="bg-primary hover:bg-primary/90 text-white font-medium py-6 px-8 rounded-md shadow-lg"
+              >
+                {isCreating ? (
+                  <>
+                    <Clock className="mr-2 h-5 w-5 animate-spin" />
+                    Creating Application...
+                  </>
+                ) : (
+                  <>
+                    Start Your Application
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+              
+              <QRScannerModal
+                buttonText="Continue Application"
+                buttonVariant="outline"
+                buttonSize="lg"
+                buttonClassName="bg-white hover:bg-gray-50 text-primary border-primary/20 font-medium py-6 px-8 rounded-md shadow-lg"
+              />
+            </div>
           </div>
         </div>
       </div>

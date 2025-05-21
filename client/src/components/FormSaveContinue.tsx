@@ -27,19 +27,49 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
   };
 
   const downloadQRCode = () => {
-    const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
-    if (canvas) {
-      const pngUrl = canvas
-        .toDataURL("image/png")
-        .replace("image/png", "image/octet-stream");
+    // Get the SVG element
+    const svgElement = document.getElementById('qr-canvas');
+    if (!svgElement) return;
+    
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = 240; // Doubled size for better quality
+    canvas.height = 240;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Create a new Image element
+    const img = new Image();
+    
+    // Convert SVG to data URL
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    
+    // When the image loads, draw it on the canvas and download
+    img.onload = () => {
+      // Draw the image on the canvas
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      const downloadLink = document.createElement("a");
+      // Convert canvas to data URL
+      const pngUrl = canvas.toDataURL('image/png');
+      
+      // Create download link
+      const downloadLink = document.createElement('a');
       downloadLink.href = pngUrl;
-      downloadLink.download = "platapay-application-qr.png";
+      downloadLink.download = 'platapay-application-qr.png';
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
-    }
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+    };
+    
+    // Set the image source to the SVG blob URL
+    img.src = url;
   };
 
   return (

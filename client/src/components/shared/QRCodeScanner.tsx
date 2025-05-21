@@ -44,11 +44,13 @@ const QRCodeScanner = ({ onClose }: QRCodeScannerProps) => {
     if (!scannerContainerRef.current) return;
 
     try {
+      console.log('Trying to open camera...');
       // Create scanner instance
       scannerRef.current = new Html5Qrcode('scanner');
       
       const config = { fps: 10, qrbox: { width: 250, height: 250 } };
       
+      console.log('Initializing QR code scanner...');
       await scannerRef.current.start(
         { facingMode: 'environment' }, 
         config,
@@ -56,8 +58,23 @@ const QRCodeScanner = ({ onClose }: QRCodeScannerProps) => {
         undefined
       );
     } catch (err) {
-      console.error('QR Scanner error:', err);
-      setError('Could not access camera. Please check camera permissions or try uploading a QR image instead.');
+      console.log('HTML5QrcodeScanner initialization failed, error = ', err);
+      
+      let errorMessage = 'Could not access camera. Please check camera permissions or try uploading a QR image instead.';
+      
+      // Check for specific error types
+      if (err && typeof err === 'object') {
+        const error = err as any; // Type assertion to avoid TypeScript errors
+        if ('name' in error) {
+          if (error.name === 'NotAllowedError' || (error.name === 'QrUnsupportedException' && error.message && error.message.includes('Permission denied'))) {
+            errorMessage = 'Camera access was denied. Please allow camera access or use the image upload option.';
+          } else if (error.name === 'NotFoundError' || (error.name === 'QrUnsupportedException' && error.message && error.message.includes('No camera found'))) {
+            errorMessage = 'No camera was detected on your device. Please use the image upload option.';
+          }
+        }
+      }
+      
+      setError(errorMessage);
       setIsScanning(false);
     }
   };
