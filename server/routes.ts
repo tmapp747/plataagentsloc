@@ -587,6 +587,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Send QR code via email for application resumption
+  app.post('/api/send-qr-email', async (req: Request, res: Response) => {
+    try {
+      const { email, qrCodeImage, resumeUrl } = req.body;
+      
+      if (!email || !qrCodeImage || !resumeUrl) {
+        return res.status(400).json({ 
+          error: 'Email, QR code image, and resume URL are required' 
+        });
+      }
+      
+      // Validate email format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+      }
+      
+      // Send the email with QR code
+      const success = await emailService.sendQRCodeEmail(
+        email,
+        qrCodeImage,
+        resumeUrl
+      );
+      
+      if (success) {
+        return res.status(200).json({ 
+          message: 'QR code email sent successfully' 
+        });
+      } else {
+        return res.status(500).json({ 
+          error: 'Failed to send QR code email' 
+        });
+      }
+    } catch (error) {
+      console.error('Error sending QR code email:', error);
+      return res.status(500).json({ 
+        error: 'Internal server error while sending QR code email' 
+      });
+    }
+  });
+
   // Calculate the approximate progress of an application
   function calculateApplicationProgress(application: Application): string {
     const totalSteps = 7; // Total number of major steps
