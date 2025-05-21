@@ -72,8 +72,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update application with email
         await storage.updateApplication(newApplication.id, { email: req.body.email });
         
-        // Send welcome email
-        await emailService.sendWelcomeEmail(
+        // Send welcome email using SendGrid
+        await sendgridService.sendWelcomeEmail(
           req.body.email,
           newApplication.applicationId,
           resumeUrl
@@ -185,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send submission confirmation email
       if (application.email) {
-        await emailService.sendStatusEmail(submittedApplication, 'submitted');
+        await sendgridService.sendStatusEmail(submittedApplication, 'submitted');
       }
       
       return res.json(submittedApplication);

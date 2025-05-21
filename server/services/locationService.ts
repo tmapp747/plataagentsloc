@@ -192,6 +192,12 @@ class LocationService {
       // Fetch cities from external API
       let citiesData: any[] = [];
       
+      // If province wasn't found (which shouldn't happen but let's be safe)
+      if (!province) {
+        // Return empty data but don't throw an error
+        return [];
+      }
+      
       // Special handling for Metro Manila and other special regions
       if (province.name === 'Metro Manila' || province.name.includes('(Direct)')) {
         // For special regions, get cities directly from the region
