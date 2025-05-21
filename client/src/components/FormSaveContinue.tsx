@@ -23,7 +23,7 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
       const timer = setTimeout(() => {
         setIsSaved(false);
       }, 3000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isSaved]);
@@ -33,7 +33,7 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
       const timer = setTimeout(() => {
         setIsCopied(false);
       }, 3000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isCopied]);
@@ -43,7 +43,7 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
       const timer = setTimeout(() => {
         setEmailSent(false);
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [emailSent]);
@@ -52,7 +52,7 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
     onSave();
     setIsSaved(true);
   };
-  
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(resumeUrl)
       .then(() => {
@@ -74,46 +74,46 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
 
   const sendEmailWithQRCode = async () => {
     if (!emailAddress) return;
-    
+
     setIsSendingEmail(true);
-    
+
     try {
       // Generate the QR code image
       const svgElement = document.getElementById('qr-canvas');
       if (!svgElement) {
         throw new Error("QR code not found");
       }
-      
+
       // Convert SVG to data URL for email
       const svgData = new XMLSerializer().serializeToString(svgElement);
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);
-      
+
       // Create a canvas to convert SVG to PNG
       const canvas = document.createElement('canvas');
       canvas.width = 240;
       canvas.height = 240;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error("Could not create canvas context");
-      
+
       // Draw the SVG on the canvas
       const img = new Image();
       img.src = url;
-      
+
       // Wait for the image to load
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
       });
-      
+
       // Draw the image on the canvas
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
+
       // Convert canvas to data URL
       const dataUrl = canvas.toDataURL('image/png');
-      
+
       // Send the email with QR code
       const response = await fetch('/api/send-qr-email', {
         method: 'POST',
@@ -126,11 +126,13 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
           resumeUrl: resumeUrl
         })
       });
-      
+
       if (!response.ok) {
-        throw new Error("Failed to send email");
+        const errorData = await response.text();
+        console.error('Email API error response:', errorData);
+        throw new Error('Failed to send email');
       }
-      
+
       setEmailSent(true);
       setShowEmailInput(false);
       toast({
@@ -153,32 +155,32 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
     // Get the SVG element
     const svgElement = document.getElementById('qr-canvas');
     if (!svgElement) return;
-    
+
     // Create a canvas element
     const canvas = document.createElement('canvas');
     canvas.width = 240; // Doubled size for better quality
     canvas.height = 240;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     // Create a new Image element
     const img = new Image();
-    
+
     // Convert SVG to data URL
     const svgData = new XMLSerializer().serializeToString(svgElement);
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
-    
+
     // When the image loads, draw it on the canvas and download
     img.onload = () => {
       // Draw the image on the canvas
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
+
       // Convert canvas to data URL with high quality PNG
       const pngUrl = canvas.toDataURL('image/png', 1.0);
-      
+
       // Create download link
       const downloadLink = document.createElement('a');
       downloadLink.href = pngUrl;
@@ -186,11 +188,11 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
-      
+
       // Clean up
       URL.revokeObjectURL(url);
     };
-    
+
     // Set the image source to the SVG blob URL
     img.src = url;
   };
