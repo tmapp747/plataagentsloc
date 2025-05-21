@@ -95,13 +95,46 @@ class LocationService {
       }
       
       // Fetch provinces from external API
-      const response = await fetch(`${PHIL_API_BASE_URL}/regions/${region.code}/provinces`);
+      // For special regions like NCR (Metro Manila), we need a different approach
+      // as they don't have provinces but have cities directly
+      let provincesData: any[] = [];
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch provinces: ${response.status} ${response.statusText}`);
+      if (region.code === '130000000') { // NCR (Metro Manila)
+        // NCR doesn't have provinces, so we'll create a dummy "Metro Manila" province
+        provincesData = [{
+          id: 1000,
+          code: '130000000',
+          name: 'Metro Manila'
+        }];
+      } else {
+        const response = await fetch(`${PHIL_API_BASE_URL}/regions/${region.code}/provinces`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch provinces: ${response.status} ${response.statusText}`);
+        }
+        
+        provincesData = await response.json() as any[];
+        
+        // If no provinces were found (like for some special regions), try getting cities directly
+        if (Array.isArray(provincesData) && provincesData.length === 0) {
+          try {
+            const citiesResponse = await fetch(`${PHIL_API_BASE_URL}/regions/${region.code}/cities-municipalities`);
+            if (citiesResponse.ok) {
+              const citiesData = await citiesResponse.json() as any[];
+              if (citiesData.length > 0) {
+                // Create a dummy province to hold these cities
+                provincesData = [{
+                  id: 2000 + regionId,
+                  code: region.code,
+                  name: `${region.name} (Direct)`
+                }];
+              }
+            }
+          } catch (cityError) {
+            console.error('Failed to get cities for region without provinces:', cityError);
+          }
+        }
       }
-      
-      const provincesData = await response.json() as any[];
       
       // Transform data to match our schema
       const provinces: Province[] = provincesData.map((province: any, index: number) => ({
@@ -157,13 +190,34 @@ class LocationService {
       }
       
       // Fetch cities from external API
-      const response = await fetch(`${PHIL_API_BASE_URL}/provinces/${provinceCode}/cities-municipalities`);
+      let citiesData: any[] = [];
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch cities: ${response.status} ${response.statusText}`);
+      // Special handling for Metro Manila and other special regions
+      if (province.name === 'Metro Manila' || province.name.includes('(Direct)')) {
+        // For special regions, get cities directly from the region
+        // Find the region for this province
+        const region = regions.find(r => {
+          const provinces = this.provincesCache.get(r.code);
+          return provinces && provinces.some(p => p.id === provinceId);
+        });
+        
+        if (region) {
+          const response = await fetch(`${PHIL_API_BASE_URL}/regions/${region.code}/cities-municipalities`);
+          if (response.ok) {
+            citiesData = await response.json() as any[];
+          } else {
+            throw new Error(`Failed to fetch region cities: ${response.status} ${response.statusText}`);
+          }
+        }
+      } else {
+        // Standard case - cities under a province
+        const response = await fetch(`${PHIL_API_BASE_URL}/provinces/${provinceCode}/cities-municipalities`);
+        if (response.ok) {
+          citiesData = await response.json() as any[];
+        } else {
+          throw new Error(`Failed to fetch cities: ${response.status} ${response.statusText}`);
+        }
       }
-      
-      const citiesData = await response.json() as any[];
       
       // Transform data to match our schema
       const cities: City[] = citiesData.map((city: any, index: number) => ({
