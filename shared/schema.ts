@@ -238,6 +238,13 @@ export const addressSchema = z.object({
   longitude: z.number().optional(),
 });
 
+// Simplified business location schema that only requires coordinates
+export const businessLocationSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+  landmark: z.string().optional(),
+});
+
 export type Address = z.infer<typeof addressSchema>;
 
 // Form Schemas for validation

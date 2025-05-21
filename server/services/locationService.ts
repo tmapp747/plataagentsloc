@@ -169,6 +169,7 @@ class LocationService {
       const regions = await this.getAllRegions();
       let provinceCode = '';
       let province = null;
+      let regionCode = '';
       
       // Search for the province in all regions
       for (const region of regions) {
@@ -176,6 +177,7 @@ class LocationService {
         province = provinces.find(p => p.id === provinceId);
         if (province) {
           provinceCode = province.code;
+          regionCode = region.code;
           break;
         }
       }
@@ -200,15 +202,17 @@ class LocationService {
       
       // Special handling for Metro Manila and other special regions
       if (province.name === 'Metro Manila' || province.name.includes('(Direct)')) {
-        // For special regions, get cities directly from the region
-        // Find the region for this province
-        const region = regions.find(r => {
-          const provinces = this.provincesCache.get(r.code);
-          return provinces && provinces.some(p => p.id === provinceId);
-        });
-        
-        if (region) {
-          const response = await fetch(`${PHIL_API_BASE_URL}/regions/${region.code}/cities-municipalities`);
+        // For Metro Manila, directly fetch from region code
+        if (regionCode === '130000000') { // NCR (Metro Manila)
+          const response = await fetch(`${PHIL_API_BASE_URL}/regions/130000000/cities-municipalities`);
+          if (response.ok) {
+            citiesData = await response.json() as any[];
+          } else {
+            throw new Error(`Failed to fetch Metro Manila cities: ${response.status} ${response.statusText}`);
+          }
+        } else {
+          // For other special regions, get cities directly from the region
+          const response = await fetch(`${PHIL_API_BASE_URL}/regions/${regionCode}/cities-municipalities`);
           if (response.ok) {
             citiesData = await response.json() as any[];
           } else {

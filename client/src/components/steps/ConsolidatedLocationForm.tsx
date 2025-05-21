@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { addressSchema } from "@shared/schema";
+import { addressSchema, businessLocationSchema } from "@shared/schema";
 import {
   Form,
   FormControl,
@@ -298,21 +298,6 @@ const ConsolidatedLocationForm = ({
             
             {!useHomeAddress && (
               <>
-                <FormField
-                  control={form.control}
-                  name="businessLocation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <AddressFormField 
-                        address={field.value}
-                        onChange={handleBusinessLocationChange}
-                        required={!useHomeAddress}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 <div className="mt-6">
                   <FormItem>
                     <FormLabel className="block text-sm font-medium text-gray-700 mb-2">
@@ -325,6 +310,9 @@ const ConsolidatedLocationForm = ({
                         onChange={handleBusinessMapLocationChange}
                       />
                     </FormControl>
+                    <FormDescription>
+                      You can click on the map to set your exact business location or use the "Detect my location" button
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 </div>
