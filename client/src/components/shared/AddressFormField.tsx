@@ -58,8 +58,16 @@ const AddressFormField = ({
 
   // Fetch provinces based on selected region ID
   const { data: provinces, isLoading: provincesLoading } = useQuery({
-    queryKey: ['/api/provinces', selectedRegionId],
+    queryKey: ['/api/provinces', { regionId: selectedRegionId }],
     enabled: !!selectedRegionId,
+    queryFn: async ({ queryKey }) => {
+      const [_path, params] = queryKey;
+      const response = await fetch(`/api/provinces?regionId=${params.regionId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
   });
 
   // Update province selection when external value changes
@@ -79,8 +87,16 @@ const AddressFormField = ({
 
   // Fetch cities based on selected province ID
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ['/api/cities', selectedProvinceId],
+    queryKey: ['/api/cities', { provinceId: selectedProvinceId }],
     enabled: !!selectedProvinceId,
+    queryFn: async ({ queryKey }) => {
+      const [_path, params] = queryKey;
+      const response = await fetch(`/api/cities?provinceId=${params.provinceId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
   });
 
   // Update city selection when external value changes
@@ -100,8 +116,16 @@ const AddressFormField = ({
 
   // Fetch barangays based on selected city ID
   const { data: barangays, isLoading: barangaysLoading } = useQuery({
-    queryKey: ['/api/barangays', selectedCityId],
+    queryKey: ['/api/barangays', { cityId: selectedCityId }],
     enabled: !!selectedCityId,
+    queryFn: async ({ queryKey }) => {
+      const [_path, params] = queryKey;
+      const response = await fetch(`/api/barangays?cityId=${params.cityId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
   });
 
   // Update barangay selection when external value changes
