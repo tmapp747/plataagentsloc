@@ -21,6 +21,8 @@ import { Application } from "@shared/schema";
 import { termsAndConditionsText } from "@/lib/formSchema";
 import StepAudio from "@/components/StepAudio";
 import { MessageSquare } from "lucide-react";
+import LegalDocumentModal from "@/components/shared/LegalDocumentModal";
+import { privacyPolicyContent, termsAndConditionsContent } from "@/lib/legalContent";
 
 type AgreementData = z.infer<typeof agreementSchema>;
 
@@ -146,7 +148,19 @@ const SignatureAgreement = ({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="font-medium">
-                    I confirm that I have read, understood, and agree to the <a href="https://platapay.ph/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Terms and Conditions</a> and <a href="https://platapay.ph/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Privacy Policy</a> for the PlataPay Agent Program. I understand my rights and responsibilities as outlined above. *
+                    I confirm that I have read, understood, and agree to the{" "}
+                    <LegalDocumentModal 
+                      triggerText="Terms and Conditions"
+                      title="Terms and Conditions"
+                      content={termsAndConditionsContent}
+                    />
+                    {" "}and{" "}
+                    <LegalDocumentModal 
+                      triggerText="Privacy Policy"
+                      title="Privacy Policy"
+                      content={privacyPolicyContent}
+                    />
+                    {" "}for the PlataPay Agent Program. I understand my rights and responsibilities as outlined above. *
                   </FormLabel>
                   <p className="text-sm text-gray-500 mt-1">
                     By checking this box and clicking "Next", you are electronically signing and agreeing to be bound by the terms of this agreement.
