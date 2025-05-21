@@ -22,6 +22,7 @@ import {
 } from "@shared/schema";
 import { anthropicService } from "./services/anthropic";
 import { emailService } from "./services/email";
+import { sendgridService } from "./services/sendgrid";
 import { prerecordedAudioService } from "./services/prerecordedAudio";
 import { openaiService } from "./services/openai";
 import { locationService } from "./services/locationService";
@@ -603,8 +604,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid email format' });
       }
       
-      // Send the email with QR code
-      const success = await emailService.sendQRCodeEmail(
+      // Send the email with QR code using SendGrid
+      const success = await sendgridService.sendQRCodeEmail(
         email,
         qrCodeImage,
         resumeUrl

@@ -1,4 +1,4 @@
-import { MailService } from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 import { Application } from '@shared/schema';
 
 /**
@@ -11,8 +11,7 @@ if (!process.env.SENDGRID_API_KEY) {
 }
 
 // Initialize SendGrid
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY || '');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 // Email templates for different application statuses
 const emailTemplates = {
@@ -107,7 +106,7 @@ export async function sendStatusEmail(application: Application, status: 'submitt
   const template = emailTemplates[status];
   
   try {
-    await mailService.send({
+    await sgMail.send({
       from: 'agent-services@platapay.ph',
       to: application.email,
       subject: template.subject,
@@ -130,7 +129,7 @@ export async function sendStatusEmail(application: Application, status: 'submitt
  */
 export async function sendWelcomeEmail(email: string, applicationId: string, resumeUrl: string): Promise<boolean> {
   try {
-    await mailService.send({
+    await sgMail.send({
       from: 'agent-services@platapay.ph',
       to: email,
       subject: 'Welcome to the PlataPay Agent Application Process',
@@ -206,11 +205,10 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
       attachments: [
         {
           filename: 'platapay-application-qr.png',
-          content: qrCodeDataUrl.split(',')[1], // Remove the data:image/png;base64, part
-          encoding: 'base64',
-          contentType: 'image/png',
+          content: qrCodeDataUrl.split(',')[1],
+          type: 'image/png', 
           disposition: 'inline',
-          contentId: 'qr-code-image' // Content ID for embedding in the email
+          content_id: 'qr-code-image' // Content ID for embedding in the email
         }
       ]
     });
