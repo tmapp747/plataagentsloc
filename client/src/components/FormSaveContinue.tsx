@@ -53,8 +53,8 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // Convert canvas to data URL
-      const pngUrl = canvas.toDataURL('image/png');
+      // Convert canvas to data URL with high quality PNG
+      const pngUrl = canvas.toDataURL('image/png', 1.0);
       
       // Create download link
       const downloadLink = document.createElement('a');
