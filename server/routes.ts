@@ -27,6 +27,7 @@ import { prerecordedAudioService } from "./services/prerecordedAudio";
 import { openaiService } from "./services/openai";
 import { locationService } from "./services/locationService";
 import { validationService } from "./services/validationService";
+import { aiEmailAgent } from "./services/aiEmailAgent";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -624,6 +625,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error sending QR code email:', error);
       return res.status(500).json({ 
         error: 'Internal server error while sending QR code email' 
+      });
+    }
+  });
+  
+  // Send personalized welcome email after personal info completion
+  app.post('/api/send-personalized-welcome', async (req: Request, res: Response) => {
+    try {
+      const { applicationId, email, qrCodeImage, resumeUrl, personalInfo } = req.body;
+      
+      if (!applicationId || !email || !qrCodeImage || !resumeUrl || !personalInfo) {
+        return res.status(400).json({ 
+          error: 'Application ID, email, QR code image, resume URL, and personal info are required' 
+        });
+      }
+      
+      // Validate email format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+      }
+      
+      try {
+        // Get application from database to ensure it exists
+        const application = await storage.getApplicationById(applicationId);
+        
+        if (!application) {
+          return res.status(404).json({ error: 'Application not found' });
+        }
+        
+        // Update application with personal info data if needed
+        if (application.email !== email) {
+          await storage.updateApplication(application.id, { email: email });
+        }
+        
+        // Generate personalized email content using AI
+        const personalizedContent = await aiEmailAgent.generatePersonalizedEmail({
+          ...application,
+          ...personalInfo
+        });
+        
+        // Create email object with personalized content
+        const success = await sendgridService.sendPersonalizedWelcomeEmail(
+          email,
+          personalizedContent,
+          application.applicationId || applicationId,
+          qrCodeImage,
+          resumeUrl
+        );
+        
+        if (success) {
+          return res.status(200).json({ 
+            message: 'Personalized welcome email sent successfully' 
+          });
+        } else {
+          return res.status(500).json({ 
+            error: 'Failed to send personalized welcome email' 
+          });
+        }
+      } catch (dbError) {
+        console.error('Database error while sending personalized email:', dbError);
+        return res.status(500).json({ 
+          error: 'Failed to process application data for personalized email' 
+        });
+      }
+    } catch (error) {
+      console.error('Error sending personalized welcome email:', error);
+      return res.status(500).json({ 
+        error: 'Internal server error while sending personalized welcome email' 
       });
     }
   });
