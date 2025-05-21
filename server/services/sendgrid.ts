@@ -172,6 +172,12 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
     // Extract application ID from resume URL if possible
     const applicationId = resumeUrl.split('/resume/')[1] || 'your application';
     
+    // Process the data URL properly
+    let content = qrCodeDataUrl;
+    if (qrCodeDataUrl.startsWith('data:image/png;base64,')) {
+      content = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
+    }
+    
     await sgMail.send({
       from: 'agent-services@platapay.ph',
       to: email,
@@ -205,7 +211,7 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
       attachments: [
         {
           filename: 'platapay-application-qr.png',
-          content: qrCodeDataUrl.split(',')[1],
+          content: content,
           type: 'image/png', 
           disposition: 'inline',
           contentId: 'qr-code-image' // Content ID for embedding in the email

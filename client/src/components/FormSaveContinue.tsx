@@ -118,6 +118,13 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
       const response = await fetch('/api/send-qr-email', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: emailAddress,
+          qrCodeImage: dataUrl,
+          resumeUrl
+        })
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
