@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { QrCode } from "lucide-react";
 import { useState } from "react";
-import QRCodeScanner from "./QRCodeScanner";
+import QRCodeUploader from "./QRCodeUploader";
 
 interface QRScannerModalProps {
   buttonText?: string;
@@ -25,10 +25,6 @@ const QRScannerModal = ({
   buttonClassName = "",
 }: QRScannerModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const handleClose = () => {
-    setIsOpen(false);
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -46,10 +42,10 @@ const QRScannerModal = ({
         <DialogHeader>
           <DialogTitle>Resume Your Application</DialogTitle>
           <DialogDescription>
-            Scan or upload the QR code from your saved application to continue where you left off.
+            Upload the QR code from your saved application to continue where you left off.
           </DialogDescription>
         </DialogHeader>
-        <QRCodeScanner onClose={handleClose} />
+        <QRCodeUploader />
       </DialogContent>
     </Dialog>
   );

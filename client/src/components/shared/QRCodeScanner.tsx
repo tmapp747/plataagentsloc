@@ -106,38 +106,43 @@ const QRCodeScanner = ({ onClose }: QRCodeScannerProps) => {
     setIsUploading(true);
     setError(null);
 
+    // Create a temporary scanner ID that definitely doesn't exist yet
+    const tempScannerId = `temp-scanner-${Date.now()}`;
+    
+    // Create a temporary hidden div for the scanner
+    const tempScannerDiv = document.createElement('div');
+    tempScannerDiv.id = tempScannerId;
+    tempScannerDiv.style.display = 'none';
+    document.body.appendChild(tempScannerDiv);
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      if (!e.target?.result) return;
+      if (!e.target?.result) {
+        document.body.removeChild(tempScannerDiv);
+        return;
+      }
       
-      const img = new Image();
-      img.src = e.target.result as string;
-      
-      img.onload = () => {
-        try {
-          // Create scanner instance for file processing
-          const tempScanner = new Html5Qrcode('scanner');
-          tempScanner.scanFile(file, true)
-            .then(decodedText => {
-              setScanResult(decodedText);
-              setIsUploading(false);
-            })
-            .catch(err => {
-              console.error('QR code scan error:', err);
-              setError('Could not detect QR code in the image. Please upload a clearer image.');
-              setIsUploading(false);
-            });
-        } catch (err) {
-          console.error('QR processing error:', err);
-          setError('Error processing the image. Please try a different image.');
-          setIsUploading(false);
-        }
-      };
-      
-      img.onerror = () => {
-        setError('Error loading the image. Please try a different image.');
+      try {
+        // Create scanner instance for file processing
+        const tempScanner = new Html5Qrcode(tempScannerId);
+        tempScanner.scanFile(file, true)
+          .then(decodedText => {
+            setScanResult(decodedText);
+            setIsUploading(false);
+            document.body.removeChild(tempScannerDiv);
+          })
+          .catch(err => {
+            console.error('QR code scan error:', err);
+            setError('Could not detect QR code in the image. Please upload a clearer image.');
+            setIsUploading(false);
+            document.body.removeChild(tempScannerDiv);
+          });
+      } catch (err) {
+        console.error('QR processing error:', err);
+        setError('Error processing the image. Please try a different image.');
         setIsUploading(false);
-      };
+        document.body.removeChild(tempScannerDiv);
+      }
     };
     
     reader.onerror = () => {
