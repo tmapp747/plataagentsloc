@@ -125,29 +125,61 @@ const ConsolidatedLocationForm = ({
     }
   };
 
-  const handleHomeMapLocationChange = (lat: number, lng: number) => {
-    const currentAddress = form.getValues("address") || {};
-    const updatedAddress = {
-      ...currentAddress,
-      latitude: lat,
-      longitude: lng,
-    };
-    
-    form.setValue("address", updatedAddress, { shouldValidate: true });
-    
-    // If using same address for business, update business location too
-    if (form.getValues("businessLocationSameAsAddress")) {
-      form.setValue("businessLocation", updatedAddress, { shouldValidate: true });
+  const handleHomeMapLocationChange = async (lat: number, lng: number) => {
+    try {
+      const currentAddress = form.getValues("address") || {};
+      const updatedAddress = {
+        ...currentAddress,
+        latitude: lat,
+        longitude: lng,
+      };
+      
+      // Update form value
+      form.setValue("address", updatedAddress, { shouldValidate: true });
+      
+      // If using same address for business, update business location too
+      if (form.getValues("businessLocationSameAsAddress")) {
+        form.setValue("businessLocation", updatedAddress, { shouldValidate: true });
+      }
+      
+      // Save the updated coordinates to the backend
+      if (applicationId) {
+        await onSave({
+          address: updatedAddress,
+          businessLocation: form.getValues("businessLocationSameAsAddress") 
+            ? updatedAddress 
+            : form.getValues("businessLocation"),
+          businessLocationSameAsAddress: form.getValues("businessLocationSameAsAddress"),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating home location coordinates:", error);
     }
   };
 
-  const handleBusinessMapLocationChange = (lat: number, lng: number) => {
-    const currentAddress = form.getValues("businessLocation") || {};
-    form.setValue("businessLocation", {
-      ...currentAddress,
-      latitude: lat,
-      longitude: lng,
-    }, { shouldValidate: true });
+  const handleBusinessMapLocationChange = async (lat: number, lng: number) => {
+    try {
+      const currentAddress = form.getValues("businessLocation") || {};
+      const updatedAddress = {
+        ...currentAddress,
+        latitude: lat,
+        longitude: lng,
+      };
+      
+      // Update form value
+      form.setValue("businessLocation", updatedAddress, { shouldValidate: true });
+      
+      // Save the updated coordinates to the backend
+      if (applicationId) {
+        await onSave({
+          address: form.getValues("address"),
+          businessLocation: updatedAddress,
+          businessLocationSameAsAddress: form.getValues("businessLocationSameAsAddress"),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating business location coordinates:", error);
+    }
   };
 
   const handleBusinessLocationChange = (address: Partial<any>) => {

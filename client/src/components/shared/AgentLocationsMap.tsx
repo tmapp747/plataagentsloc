@@ -78,7 +78,7 @@ const AgentLocationsMap = ({
   const mainMarkerRef = useRef<L.Marker | null>(null);
   const agentMarkersRef = useRef<Record<string, L.Marker>>({});
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const [coords, setCoords] = useState({ 
     lat: selectedLocation?.latitude || PlataPay_CENTER_COORDS.lat, 
     lng: selectedLocation?.longitude || PlataPay_CENTER_COORDS.lng 
@@ -88,20 +88,20 @@ const AgentLocationsMap = ({
   const createCustomIcon = (agentType: string, status: string) => {
     // Based on agent type and status, use different colors
     let markerColor = '#4A2A82'; // Default purple for basic
-    
+
     if (agentType === 'premium') {
       markerColor = '#FF9900'; // Orange for premium
     } else if (agentType === 'standard') {
       markerColor = '#4169E1'; // Blue for standard
     }
-    
+
     // For inactive agents, use a more muted color
     if (status === 'inactive') {
       markerColor = '#888888';
     } else if (status === 'pending') {
       markerColor = '#DFDDF7'; // Light purple for pending
     }
-    
+
     // Create an SVG icon
     const svgIcon = `
       <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">
@@ -110,10 +110,10 @@ const AgentLocationsMap = ({
         <circle cx="15" cy="14" r="5" fill="white"/>
       </svg>
     `;
-    
+
     // Convert SVG to Data URL
     const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
-    
+
     return L.icon({
       iconUrl,
       iconSize: [30, 40],
@@ -121,7 +121,7 @@ const AgentLocationsMap = ({
       popupAnchor: [0, -35],
     });
   };
-  
+
   // Initialize the map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -138,28 +138,51 @@ const AgentLocationsMap = ({
       // Add interactive marker if in interactive mode
       if (interactive) {
         const icon = createCustomIcon('basic', 'active');
-        
+
         mainMarkerRef.current = L.marker([coords.lat, coords.lng], { 
           icon, 
           draggable: true 
         }).addTo(mapRef.current);
 
-        // Handle marker drag
+        // Handle marker drag with debounce to prevent too many updates
+        let dragTimeout: NodeJS.Timeout;
         mainMarkerRef.current.on("dragend", () => {
           const newPos = mainMarkerRef.current?.getLatLng();
           if (newPos && onLocationChange) {
             setCoords({ lat: newPos.lat, lng: newPos.lng });
-            onLocationChange(newPos.lat, newPos.lng);
+
+            // Clear any existing timeout
+            if (dragTimeout) clearTimeout(dragTimeout);
+
+            // Debounce the API call to prevent too many requests
+            dragTimeout = setTimeout(() => {
+              onLocationChange(newPos.lat, newPos.lng);
+            }, 300);
           }
         });
 
-        // Handle map click for marker placement
+        // Handle map click for marker placement with validation
         mapRef.current.on("click", (e: L.LeafletMouseEvent) => {
           if (mainMarkerRef.current && mapRef.current && interactive) {
-            mainMarkerRef.current.setLatLng(e.latlng);
-            setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
-            if (onLocationChange) {
-              onLocationChange(e.latlng.lat, e.latlng.lng);
+            // Validate coordinates are within reasonable bounds for Philippines
+            const isValidLat = e.latlng.lat >= 4.5 && e.latlng.lat <= 21.5;
+            const isValidLng = e.latlng.lng >= 116 && e.latlng.lng <= 127;
+
+            if (isValidLat && isValidLng) {
+              mainMarkerRef.current.setLatLng(e.latlng);
+              setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+
+              if (onLocationChange) {
+                // Clear any existing timeout
+                if (dragTimeout) clearTimeout(dragTimeout);
+
+                // Debounce the API call to prevent too many requests
+                dragTimeout = setTimeout(() => {
+                  onLocationChange(e.latlng.lat, e.latlng.lng);
+                }, 300);
+              }
+            } else {
+              console.warn("Selected coordinates outside Philippines boundaries, ignoring");
             }
           }
         });
@@ -188,9 +211,9 @@ const AgentLocationsMap = ({
     if (selectedLocation?.latitude && selectedLocation?.longitude) {
       const newLat = selectedLocation.latitude;
       const newLng = selectedLocation.longitude;
-      
+
       setCoords({ lat: newLat, lng: newLng });
-      
+
       if (mapRef.current && mainMarkerRef.current && interactive) {
         mainMarkerRef.current.setLatLng([newLat, newLng]);
         mapRef.current.setView([newLat, newLng], 13);
@@ -201,45 +224,45 @@ const AgentLocationsMap = ({
   // Add agent location markers to the map
   useEffect(() => {
     if (!mapRef.current) return;
-    
+
     // Clear existing markers first
     Object.values(agentMarkersRef.current).forEach(marker => {
       marker.remove();
     });
     agentMarkersRef.current = {};
-    
+
     // Filter agents by region if a filter is provided
     const filteredAgents = regionFilter
       ? agentLocations.filter(agent => agent.address?.includes(regionFilter))
       : agentLocations;
-    
+
     // Add markers for all agent locations
     filteredAgents.forEach(agent => {
       if (!mapRef.current) return;
-      
+
       const icon = createCustomIcon(agent.type, agent.status);
-      
+
       const marker = L.marker([agent.latitude, agent.longitude], { icon })
         .addTo(mapRef.current);
-      
+
       // Add popup with agent info
       marker.bindPopup(`
         <div class="font-medium">${agent.name}</div>
         <div class="text-xs text-gray-500">${agent.type} franchise</div>
         ${agent.address ? `<div class="text-xs mt-1">${agent.address}</div>` : ''}
       `);
-      
+
       // Add click handler
       marker.on('click', () => {
         if (onAgentSelect) {
           onAgentSelect(agent);
         }
       });
-      
+
       // Store reference to marker
       agentMarkersRef.current[agent.id.toString()] = marker;
     });
-    
+
     // Fit map bounds to include all markers if there are any and no selected location
     if (filteredAgents.length > 0 && !selectedLocation) {
       const bounds = L.latLngBounds(filteredAgents.map(a => [a.latitude, a.longitude]));
@@ -251,18 +274,18 @@ const AgentLocationsMap = ({
   const handleDetectLocation = () => {
     if (navigator.geolocation && interactive) {
       // Show loading state or indicator here if needed
-      
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const newLat = position.coords.latitude;
           const newLng = position.coords.longitude;
-          
+
           // Update state
           setCoords({ lat: newLat, lng: newLng });
           if (onLocationChange) {
             onLocationChange(newLat, newLng);
           }
-          
+
           // Update map and marker
           if (mapRef.current && mainMarkerRef.current) {
             mapRef.current.setView([newLat, newLng], 15);
@@ -271,7 +294,7 @@ const AgentLocationsMap = ({
         },
         (error) => {
           console.error("Error getting location:", error);
-          
+
           // Handle specific errors
           let errorMessage = "Unable to detect your location.";
           switch (error.code) {
@@ -285,7 +308,7 @@ const AgentLocationsMap = ({
               errorMessage = "Location request timed out. Please try again.";
               break;
           }
-          
+
           // You could display this error message to the user
           alert(errorMessage);
         },
@@ -311,7 +334,7 @@ const AgentLocationsMap = ({
         style={{ height }}
       >
         <div className="absolute top-0 left-0 w-full h-full z-0" ref={mapContainerRef} />
-        
+
         {/* Map Controls Overlay */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
           {interactive && (
@@ -334,7 +357,7 @@ const AgentLocationsMap = ({
               </Tooltip>
             </TooltipProvider>
           )}
-          
+
           {agentLocations.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -381,7 +404,7 @@ const AgentLocationsMap = ({
           )}
         </div>
       </div>
-      
+
       {interactive && (
         <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <Button
@@ -394,7 +417,7 @@ const AgentLocationsMap = ({
             <Navigation className="h-4 w-4 mr-1.5" />
             Detect my location
           </Button>
-          
+
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <div>
               <Label className="block text-xs font-medium text-primary">Latitude</Label>
