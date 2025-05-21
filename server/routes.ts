@@ -883,7 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send QR code email
-  apiRouter.post('/send-qr-email', async (req, res) => {
+  app.post('/api/send-qr-email', async (req, res) => {
     const { email, qrCodeImage, resumeUrl } = req.body;
 
     if (!email || !qrCodeImage || !resumeUrl) {
@@ -896,9 +896,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Make sure we're using the correct email service
       // In development, use the test email service
       if (process.env.NODE_ENV === 'development') {
-        const testEmailResult = await import('./services/testEmailService').then(module => 
-          module.testEmailService.sendTestEmail(email, 'Your PlataPay Application QR Code', 
-            `<p>Resume URL: ${resumeUrl}</p><p>QR Code included as attachment</p>`)
+        const testEmailResult = await testEmailService.sendTestEmail(
+          email, 
+          'Your PlataPay Application QR Code', 
+          `<p>Resume URL: ${resumeUrl}</p><p>QR Code included as attachment</p>`
         );
         return res.json({ success: true, info: 'Test email service used in development' });
       } else {
