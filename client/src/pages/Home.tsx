@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useCreateApplication } from "@/hooks/useApplication";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import QRScannerModal from "@/components/shared/QRScannerModal";
 import { 
   ArrowRight,
   CheckCircle2, 
