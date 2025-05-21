@@ -272,7 +272,7 @@ export async function sendPersonalizedWelcomeEmail(
       attachments: [
         {
           filename: 'platapay-application-qr.png',
-          content: qrCodeDataUrl.split(',')[1],
+          content: qrCodeDataUrl.replace(/^data:image\/png;base64,/, ''),
           type: 'image/png', 
           disposition: 'inline',
           contentId: 'qr-code-image'
