@@ -28,6 +28,7 @@ import FormNavigation from "@/components/FormNavigation";
 import FormSaveContinue from "@/components/FormSaveContinue";
 import FormValidationSummary from "@/components/FormValidationSummary";
 import { Application } from "@shared/schema";
+import { useBusinessTypes, useBusinessNatures, useYearsOperating, useDailyTransactions } from "@/hooks/useValidationData";
 
 type BusinessInfoData = z.infer<typeof businessInfoSchema>;
 
@@ -49,6 +50,12 @@ const BusinessExperience = ({
   isLoading = false,
 }: BusinessExperienceProps) => {
   const [validationSuccess, setValidationSuccess] = useState(false);
+  
+  // Fetch validation data from the API
+  const { data: businessTypes, isLoading: isLoadingBusinessTypes } = useBusinessTypes();
+  const { data: businessNatures, isLoading: isLoadingBusinessNatures } = useBusinessNatures();
+  const { data: yearsOperating, isLoading: isLoadingYearsOperating } = useYearsOperating();
+  const { data: dailyTransactions, isLoading: isLoadingDailyTransactions } = useDailyTransactions();
 
   // Set default values from the application data if available
   const defaultValues: Partial<BusinessInfoData> = {
