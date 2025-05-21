@@ -228,7 +228,7 @@ class LocationService {
         throw new Error(`Failed to fetch barangays: ${response.status} ${response.statusText}`);
       }
       
-      const barangaysData = await response.json();
+      const barangaysData = await response.json() as any[];
       
       // Transform data to match our schema
       const barangays: Barangay[] = barangaysData.map((barangay: any, index: number) => ({
