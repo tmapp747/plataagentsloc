@@ -33,14 +33,28 @@ const QRCodeUploader = () => {
       // Create scanner instance
       const tempScanner = new Html5Qrcode(tempScannerId);
       
-      // Scan the file
-      const decodedText = await tempScanner.scanFile(file, true);
-      
-      // Process the QR code content
-      await processQRCode(decodedText);
+      try {
+        // Scan the file
+        const decodedText = await tempScanner.scanFile(file, /* verbose */ false);
+        
+        // Process the QR code content
+        await processQRCode(decodedText);
+      } catch (error) {
+        console.error('QR code scan error:', error);
+        setError('Could not detect a valid QR code in the image. Please upload a clearer image or ensure it contains a valid PlataPay QR code.');
+      } finally {
+        // Clean up scanner
+        if (tempScanner) {
+          try {
+            await tempScanner.clear();
+          } catch (clearError) {
+            console.error('Error clearing scanner:', clearError);
+          }
+        }
+      }
     } catch (err) {
-      console.error('QR code scan error:', err);
-      setError('Could not detect a valid QR code in the image. Please upload a different image.');
+      console.error('QR scanner setup error:', err);
+      setError('Error setting up QR scanner. Please try again with a different image.');
     } finally {
       setIsUploading(false);
       document.body.removeChild(tempScannerDiv);
@@ -48,11 +62,14 @@ const QRCodeUploader = () => {
   };
 
   const processQRCode = async (qrContent: string) => {
+    // Log the QR content for debugging
+    console.log('QR Content detected:', qrContent);
+    
     // Extract token from QR code
     const token = extractTokenFromUrl(qrContent);
     
     if (!token) {
-      setError('Invalid QR code. Please upload a valid PlataPay application QR code.');
+      setError('Invalid QR code content. Please upload a valid PlataPay application QR code.');
       return;
     }
 
@@ -60,10 +77,13 @@ const QRCodeUploader = () => {
     
     try {
       // Fetch the application data using the token
+      console.log('Fetching application with token:', token);
       const response = await fetch(`/api/applications/qr/${token}`);
       
       if (!response.ok) {
-        throw new Error('Could not find application with the provided QR code.');
+        const errorData = await response.text();
+        console.error('API error response:', errorData);
+        throw new Error(`Could not find application with the provided QR code (${response.status}).`);
       }
       
       const application = await response.json();
@@ -89,17 +109,31 @@ const QRCodeUploader = () => {
   const extractTokenFromUrl = (url: string): string | null => {
     // Try to extract token from URL
     try {
+      console.log('Extracting token from:', url);
+      
       // Handle full URLs
       if (url.includes('/resume/')) {
         const parts = url.split('/resume/');
-        return parts[1]?.split(/[?#]/)[0] || null;
+        const token = parts[1]?.split(/[?#]/)[0] || null;
+        console.log('Extracted token from URL:', token);
+        return token;
       }
       
       // Handle direct tokens (if the QR just contains the token itself)
       if (/^[A-Za-z0-9_-]+$/.test(url)) {
+        console.log('Using direct token:', url);
         return url;
       }
       
+      // Handle URLs that might have the token in other formats
+      const urlObj = new URL(url);
+      const tokenParam = urlObj.searchParams.get('token');
+      if (tokenParam) {
+        console.log('Extracted token from query param:', tokenParam);
+        return tokenParam;
+      }
+      
+      console.log('Could not extract token from content');
       return null;
     } catch (err) {
       console.error('Error extracting token:', err);
