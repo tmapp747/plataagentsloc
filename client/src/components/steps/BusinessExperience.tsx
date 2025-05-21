@@ -233,10 +233,17 @@ const BusinessExperience = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="less_than_10">Less than 10</SelectItem>
-                      <SelectItem value="10_to_50">10-50</SelectItem>
-                      <SelectItem value="50_to_100">50-100</SelectItem>
-                      <SelectItem value="100_plus">More than 100</SelectItem>
+                      {isLoadingDailyTransactions ? (
+                        <SelectItem value="loading">Loading...</SelectItem>
+                      ) : (
+                        dailyTransactions?.map((transaction: string) => (
+                          <SelectItem key={transaction} value={transaction}>
+                            {transaction === "less_than_10" ? "Less than 10" : 
+                             transaction === "500+" ? "More than 500" :
+                             transaction.replace('_', '-')}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
