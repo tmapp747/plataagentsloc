@@ -646,23 +646,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       try {
-        // Get application from database to ensure it exists
-        const application = await storage.getApplicationById(applicationId);
-        
-        if (!application) {
-          return res.status(404).json({ error: 'Application not found' });
-        }
-        
-        // Update application with personal info data if needed
-        if (application.email !== email) {
-          await storage.updateApplication(application.id, { email: email });
+        // Try to get application from database to add to personalized email
+        let application = null;
+        try {
+          application = await storage.getApplicationById(applicationId);
+          
+          // If found, update application with email if needed
+          if (application && application.email !== email) {
+            await storage.updateApplication(application.id, { email: email });
+          }
+        } catch (error) {
+          console.log('Application lookup error:', error);
+          // We'll continue even if application is not found
         }
         
         // Generate personalized email content using AI
-        const personalizedContent = await aiEmailAgent.generatePersonalizedEmail({
-          ...application,
-          ...personalInfo
-        });
+        // Combine application data with personal info, if application was found
+        const applicantData = {
+          ...(application || {}),
+          ...personalInfo,
+          applicationId: application?.applicationId || applicationId
+        };
         
         // Create email object with personalized content
         const success = await sendgridService.sendPersonalizedWelcomeEmail(
