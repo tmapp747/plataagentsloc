@@ -123,15 +123,8 @@ const FormSaveContinue = ({ resumeUrl, onSave }: FormSaveContinueProps) => {
         body: JSON.stringify({
           email: emailAddress,
           qrCodeImage: dataUrl,
-          resumeUrl
-        })
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: emailAddress,
-          qrCodeImage: dataUrl,
           resumeUrl: resumeUrl
-        }),
+        })
       });
       
       if (!response.ok) {
