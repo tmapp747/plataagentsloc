@@ -215,7 +215,10 @@ const PersonalInfo = ({
         Please provide your personal details so we can verify your identity.
       </p>
 
-      <FormSaveContinue resumeUrl={resumeUrl} onSave={handleSave} />
+      {/* Only show FormSaveContinue if we're in edit mode (when application already has some data) */}
+      {application?.firstName && (
+        <FormSaveContinue resumeUrl={resumeUrl} onSave={handleSave} />
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -464,6 +467,71 @@ const PersonalInfo = ({
             />
           </div>
 
+          {/* QR Code section (only appears after the form is valid) */}
+          {validationSuccess && formState.isValid && (
+            <div className="mb-8 bg-primary-lighter bg-opacity-10 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-primary mb-2">Your Application QR Code</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                This QR code allows you to continue your application from any device. We recommend saving it or having it emailed to you.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                {/* QR Code Display */}
+                <div ref={qrCodeRef} className="bg-white p-3 rounded-md shadow-sm">
+                  <QRCodeSVG
+                    id="personal-info-qr"
+                    value={resumeUrl}
+                    size={150}
+                    level="M"
+                    includeMargin={true}
+                    bgColor={"#ffffff"}
+                    fgColor={"#4A2A82"}
+                  />
+                </div>
+                
+                {/* Email Opt-in */}
+                <div className="flex-1">
+                  <div className="flex items-start space-x-2 mb-4">
+                    <Checkbox 
+                      id="email-optin" 
+                      checked={emailOptIn}
+                      onCheckedChange={(checked) => setEmailOptIn(checked as boolean)}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <label
+                        htmlFor="email-optin"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Send me a personalized welcome email with this QR code
+                      </label>
+                      <p className="text-sm text-muted-foreground">
+                        You'll receive a welcome email with this QR code when you proceed to the next step
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Show success message if email was sent */}
+                  {showPersonalizedEmailSent && (
+                    <div className="text-sm text-green-600 mb-2">
+                      Welcome email sent successfully to {form.getValues("email")}!
+                    </div>
+                  )}
+                  
+                  {/* Show error message if email failed */}
+                  {emailSendError && (
+                    <Alert variant="destructive" className="mb-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Email Error</AlertTitle>
+                      <AlertDescription>
+                        {emailSendError}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <FormValidationSummary
             errors={formState.errors}
             success={validationSuccess && formState.isValid}
@@ -472,7 +540,7 @@ const PersonalInfo = ({
 
           <FormNavigation
             onPrevious={onPrevious}
-            isSubmitting={isLoading}
+            isSubmitting={isLoading || sendingEmail}
             disableNext={!formState.isValid}
           />
         </form>
