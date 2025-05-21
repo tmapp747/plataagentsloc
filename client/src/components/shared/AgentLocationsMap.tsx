@@ -247,19 +247,23 @@ const AgentLocationsMap = ({
     }
   }, [agentLocations, regionFilter, onAgentSelect, selectedLocation]);
 
-  // Handle detect location
+  // Handle detect location with improved error handling and options
   const handleDetectLocation = () => {
     if (navigator.geolocation && interactive) {
+      // Show loading state or indicator here if needed
+      
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const newLat = position.coords.latitude;
           const newLng = position.coords.longitude;
           
+          // Update state
           setCoords({ lat: newLat, lng: newLng });
           if (onLocationChange) {
             onLocationChange(newLat, newLng);
           }
           
+          // Update map and marker
           if (mapRef.current && mainMarkerRef.current) {
             mapRef.current.setView([newLat, newLng], 15);
             mainMarkerRef.current.setLatLng([newLat, newLng]);
@@ -267,8 +271,33 @@ const AgentLocationsMap = ({
         },
         (error) => {
           console.error("Error getting location:", error);
+          
+          // Handle specific errors
+          let errorMessage = "Unable to detect your location.";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Location access was denied. Please enable location services in your browser settings.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Location information is unavailable. Please try again.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Location request timed out. Please try again.";
+              break;
+          }
+          
+          // You could display this error message to the user
+          alert(errorMessage);
+        },
+        // Additional options for better accuracy
+        {
+          enableHighAccuracy: true, // Use GPS if available
+          timeout: 10000, // 10 seconds
+          maximumAge: 0 // Don't use cached position
         }
       );
+    } else if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser. Please enter your location manually.");
     }
   };
 
