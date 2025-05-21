@@ -240,8 +240,8 @@ export const addressSchema = z.object({
 
 // Simplified business location schema that only requires coordinates
 export const businessLocationSchema = z.object({
-  latitude: z.number(),
-  longitude: z.number(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   landmark: z.string().optional(),
 });
 

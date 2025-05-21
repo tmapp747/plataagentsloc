@@ -22,10 +22,10 @@ import MapComponent from "@/components/shared/MapComponent";
 import StepAudio from "@/components/StepAudio";
 import { Application } from "@shared/schema";
 
-// Schema for both home and business addresses
+// Schema for home address and simplified business location (lat/long only)
 const consolidatedLocationSchema = z.object({
   address: addressSchema,
-  businessLocation: addressSchema.optional(),
+  businessLocation: businessLocationSchema.optional(),
   businessLocationSameAsAddress: z.boolean().default(false),
   landmark: z.string().optional(),
 });
@@ -119,9 +119,14 @@ const ConsolidatedLocationForm = ({
   const handleHomeAddressChange = (address: Partial<any>) => {
     form.setValue("address", address, { shouldValidate: true });
     
-    // If using same address for business, update business location too
+    // If using same address for business, update business location coordinates
     if (form.getValues("businessLocationSameAsAddress")) {
-      form.setValue("businessLocation", address, { shouldValidate: true });
+      const businessLocation = {
+        latitude: address.latitude,
+        longitude: address.longitude,
+        landmark: address.landmark
+      };
+      form.setValue("businessLocation", businessLocation, { shouldValidate: true });
     }
   };
 
@@ -137,9 +142,14 @@ const ConsolidatedLocationForm = ({
       // Update form value
       form.setValue("address", updatedAddress, { shouldValidate: true });
       
-      // If using same address for business, update business location too
+      // If using same address for business, update business location coordinates only
       if (form.getValues("businessLocationSameAsAddress")) {
-        form.setValue("businessLocation", updatedAddress, { shouldValidate: true });
+        const businessLocation = {
+          latitude: lat,
+          longitude: lng,
+          landmark: currentAddress.landmark
+        };
+        form.setValue("businessLocation", businessLocation, { shouldValidate: true });
       }
       
       // Save the updated coordinates to the backend
@@ -147,7 +157,11 @@ const ConsolidatedLocationForm = ({
         await onSave({
           address: updatedAddress,
           businessLocation: form.getValues("businessLocationSameAsAddress") 
-            ? updatedAddress 
+            ? {
+                latitude: lat,
+                longitude: lng,
+                landmark: currentAddress.landmark
+              }
             : form.getValues("businessLocation"),
           businessLocationSameAsAddress: form.getValues("businessLocationSameAsAddress"),
         });
@@ -159,21 +173,22 @@ const ConsolidatedLocationForm = ({
 
   const handleBusinessMapLocationChange = async (lat: number, lng: number) => {
     try {
-      const currentAddress = form.getValues("businessLocation") || {};
-      const updatedAddress = {
-        ...currentAddress,
+      // Create a business location with only coordinates
+      const updatedBusinessLocation = {
         latitude: lat,
         longitude: lng,
+        // Keep landmark if it exists
+        landmark: form.getValues("businessLocation")?.landmark || form.getValues("landmark") || "",
       };
       
       // Update form value
-      form.setValue("businessLocation", updatedAddress, { shouldValidate: true });
+      form.setValue("businessLocation", updatedBusinessLocation, { shouldValidate: true });
       
       // Save the updated coordinates to the backend
       if (applicationId) {
         await onSave({
           address: form.getValues("address"),
-          businessLocation: updatedAddress,
+          businessLocation: updatedBusinessLocation,
           businessLocationSameAsAddress: form.getValues("businessLocationSameAsAddress"),
         });
       }
@@ -191,8 +206,14 @@ const ConsolidatedLocationForm = ({
     form.setValue("businessLocationSameAsAddress", checked, { shouldValidate: true });
     
     if (checked) {
-      // Copy home address to business location
-      form.setValue("businessLocation", form.getValues("address"), { shouldValidate: true });
+      // Just copy coordinates from home address to business location
+      const homeAddress = form.getValues("address");
+      const businessLocation = {
+        latitude: homeAddress?.latitude || 0,
+        longitude: homeAddress?.longitude || 0,
+        landmark: homeAddress?.landmark || "",
+      };
+      form.setValue("businessLocation", businessLocation, { shouldValidate: true });
     }
   };
 
