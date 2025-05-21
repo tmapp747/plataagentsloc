@@ -26,20 +26,15 @@ const AddressFormField = ({
   showLatLong = false,
   required = true,
 }: AddressFormFieldProps) => {
-  // State to track selections by code
+  // State to track selections by name
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(address.region);
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>(address.province);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(address.city);
 
-  // State to track IDs for API calls
+  // State to track IDs for API calls directly
   const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
   const [selectedProvinceId, setSelectedProvinceId] = useState<number | undefined>();
   const [selectedCityId, setSelectedCityId] = useState<number | undefined>();
-
-  // Maps to store relationships between names and IDs
-  const [regionNameToIdMap, setRegionNameToIdMap] = useState<Record<string, number>>({});
-  const [provinceNameToIdMap, setProvinceNameToIdMap] = useState<Record<string, number>>({});
-  const [cityNameToIdMap, setCityNameToIdMap] = useState<Record<string, number>>({});
 
   // Fetch regions
   const { data: regions, isLoading: regionsLoading } = useQuery({
