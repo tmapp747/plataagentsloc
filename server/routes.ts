@@ -25,6 +25,7 @@ import { emailService } from "./services/email";
 import { prerecordedAudioService } from "./services/prerecordedAudio";
 import { openaiService } from "./services/openai";
 import { locationService } from "./services/locationService";
+import { validationService } from "./services/validationService";
 
 // Set up multer for file uploads
 const upload = multer({
