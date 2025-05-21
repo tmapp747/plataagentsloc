@@ -58,7 +58,13 @@ const AddressFormField = ({
 
   // Fetch provinces based on selected region ID
   const { data: provinces, isLoading: provincesLoading } = useQuery({
-    queryKey: ['/api/provinces', { regionId: selectedRegionId }],
+    queryKey: ['/api/provinces'],
+    queryFn: async () => {
+      if (!selectedRegionId) return [];
+      const response = await fetch(`/api/provinces?regionId=${selectedRegionId}`);
+      if (!response.ok) throw new Error('Failed to fetch provinces');
+      return response.json();
+    },
     enabled: !!selectedRegionId,
   });
 
@@ -78,7 +84,13 @@ const AddressFormField = ({
 
   // Fetch cities based on selected province ID
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ['/api/cities', { provinceId: selectedProvinceId }],
+    queryKey: ['/api/cities'],
+    queryFn: async () => {
+      if (!selectedProvinceId) return [];
+      const response = await fetch(`/api/cities?provinceId=${selectedProvinceId}`);
+      if (!response.ok) throw new Error('Failed to fetch cities');
+      return response.json();
+    },
     enabled: !!selectedProvinceId,
   });
 
@@ -98,7 +110,13 @@ const AddressFormField = ({
 
   // Fetch barangays based on selected city ID
   const { data: barangays, isLoading: barangaysLoading } = useQuery({
-    queryKey: ['/api/barangays', { cityId: selectedCityId }],
+    queryKey: ['/api/barangays'],
+    queryFn: async () => {
+      if (!selectedCityId) return [];
+      const response = await fetch(`/api/barangays?cityId=${selectedCityId}`);
+      if (!response.ok) throw new Error('Failed to fetch barangays');
+      return response.json();
+    },
     enabled: !!selectedCityId,
   });
 
