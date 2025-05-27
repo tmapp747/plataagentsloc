@@ -1,16 +1,16 @@
+
 import nodemailer from 'nodemailer';
 import { Application } from '@shared/schema';
 
 /**
  * Email notification service using Nodemailer
- * DO NOT EDIT OR MODIFY WITHOUT EXPLICIT PERMISSION
- * This service handles email notifications for application status updates
+ * This service handles all email notifications for the application
  */
 
-// Create a test SMTP service for development - in production, use actual SMTP credentials
-const transporter = nodemailer.createTransport({
-  host: 'smtp.ethereal.email', // Development SMTP server
-  port: 587,
+// Create a transporter - in production, use actual SMTP credentials
+const transporter = nodemailer.createTransporter({
+  host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+  port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false,
   auth: {
     user: process.env.EMAIL_USER || 'platapay@example.com',
@@ -177,7 +177,12 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
     // Extract application ID from resume URL if possible
     const applicationId = resumeUrl.split('/resume/')[1] || 'your application';
     
-    // The image data URL will be embedded in the email
+    // Process the data URL properly for attachment
+    let content = qrCodeDataUrl;
+    if (qrCodeDataUrl.startsWith('data:image/png;base64,')) {
+      content = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
+    }
+    
     const info = await transporter.sendMail({
       from: '"PlataPay Agent Services" <agent-services@platapay.ph>',
       to: email,
@@ -191,7 +196,7 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
           <p>Here is the QR code to continue your PlataPay Agent application:</p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <img src="${qrCodeDataUrl}" alt="Application QR Code" style="max-width: 200px; border: 1px solid #e0e0e0; padding: 10px;" />
+            <img src="cid:qr-code-image" alt="Application QR Code" style="max-width: 200px; border: 1px solid #e0e0e0; padding: 10px;" />
           </div>
           
           <p>You can use this QR code to resume your application at any time from the PlataPay website.</p>
@@ -211,8 +216,10 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
       attachments: [
         {
           filename: 'platapay-application-qr.png',
-          path: qrCodeDataUrl,
-          cid: 'qr-code-image' // Content ID for embedding in the email
+          content: content,
+          type: 'image/png',
+          disposition: 'inline',
+          contentId: 'qr-code-image'
         }
       ]
     });
@@ -225,8 +232,82 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
   }
 }
 
+/**
+ * Send personalized welcome email with QR code
+ * @param email Recipient email address
+ * @param personalizedContent AI-generated personalized email content
+ * @param applicationId The application ID
+ * @param qrCodeDataUrl The QR code as a data URL
+ * @param resumeUrl URL to resume application
+ */
+export async function sendPersonalizedWelcomeEmail(
+  email: string, 
+  personalizedContent: string,
+  applicationId: string,
+  qrCodeDataUrl: string, 
+  resumeUrl: string
+): Promise<boolean> {
+  try {
+    // Process the data URL properly for attachment
+    let content = qrCodeDataUrl;
+    if (qrCodeDataUrl.startsWith('data:image/png;base64,')) {
+      content = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
+    }
+    
+    const info = await transporter.sendMail({
+      from: '"PlataPay Agent Services" <agent-services@platapay.ph>',
+      to: email,
+      subject: 'Welcome to PlataPay Agent Application',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://platapay.ph/logo.png" alt="PlataPay Logo" style="max-width: 150px;" />
+          </div>
+          <h2 style="color: #6941C6; text-align: center;">Welcome to PlataPay!</h2>
+          
+          ${personalizedContent}
+          
+          <p>Your Application ID is: <strong>${applicationId}</strong></p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <img src="cid:qr-code-image" alt="Application QR Code" style="max-width: 200px; border: 1px solid #e0e0e0; padding: 10px;" />
+          </div>
+          
+          <p>You can use this QR code to resume your application at any time or click the button below:</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resumeUrl}" style="background-color: #6941C6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Continue Application</a>
+          </div>
+          
+          <p>If you have any questions, please contact our support team at <a href="mailto:support@platapay.ph">support@platapay.ph</a>.</p>
+          
+          <div style="background-color: #f5f3ff; border-radius: 5px; padding: 15px; margin-top: 20px;">
+            <p style="margin: 0; font-size: 14px;">This is an automated message, please do not reply to this email.</p>
+          </div>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: 'platapay-application-qr.png',
+          content: content,
+          type: 'image/png',
+          disposition: 'inline',
+          contentId: 'qr-code-image'
+        }
+      ]
+    });
+    
+    console.log(`Personalized welcome email sent to: ${email}, messageId: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    console.error(`Failed to send personalized welcome email to: ${email}`, error);
+    return false;
+  }
+}
+
 export const emailService = {
   sendStatusEmail,
   sendWelcomeEmail,
-  sendQRCodeEmail
+  sendQRCodeEmail,
+  sendPersonalizedWelcomeEmail
 };

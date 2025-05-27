@@ -22,7 +22,6 @@ import {
 } from "@shared/schema";
 import { anthropicService } from "./services/anthropic";
 import { emailService } from "./services/email";
-import { sendgridService } from "./services/sendgrid";
 import { prerecordedAudioService } from "./services/prerecordedAudio";
 import { openaiService } from "./services/openai";
 import { locationService } from "./services/locationService";
@@ -74,8 +73,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update application with email
         await storage.updateApplication(newApplication.id, { email: req.body.email });
 
-        // Send welcome email using SendGrid
-        await sendgridService.sendWelcomeEmail(
+        // Send welcome email using Nodemailer
+        await emailService.sendWelcomeEmail(
           req.body.email,
           newApplication.applicationId,
           resumeUrl
@@ -187,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send submission confirmation email
       if (application.email) {
-        await sendgridService.sendStatusEmail(submittedApplication, 'submitted');
+        await emailService.sendStatusEmail(submittedApplication, 'submitted');
       }
 
       return res.json(submittedApplication);
@@ -608,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Attempting to send QR code email to: ${email}`);
 
-      // In development, use test email service, in production use SendGrid
+      // Use emailService for all environments
       let success = false;
       
       if (process.env.NODE_ENV === 'development') {
@@ -620,15 +619,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         console.log('Development: Using test email service');
       } else {
-        // Use SendGrid for production
-        if (!process.env.SENDGRID_API_KEY) {
-          console.error('SENDGRID_API_KEY not configured for production');
-          return res.status(500).json({ 
-            error: 'Email service not configured' 
-          });
-        }
-        
-        success = await sendgridService.sendQRCodeEmail(
+        // Use Nodemailer for production
+        success = await emailService.sendQRCodeEmail(
           email,
           qrCodeImage,
           resumeUrl
@@ -724,15 +716,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           console.log('Development: Using test email service for personalized welcome');
         } else {
-          // Use SendGrid for production
-          if (!process.env.SENDGRID_API_KEY) {
-            console.error('SENDGRID_API_KEY not configured for production');
-            return res.status(500).json({ 
-              error: 'Email service not configured' 
-            });
-          }
-          
-          success = await sendgridService.sendPersonalizedWelcomeEmail(
+          // Use Nodemailer for production
+          success = await emailService.sendPersonalizedWelcomeEmail(
             email,
             personalizedContent,
             applicantData.applicationId,
