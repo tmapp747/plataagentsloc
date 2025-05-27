@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Application } from "@shared/schema";
 import platapayLogo from '@/assets/platapay-logo.png';
 import FormProgress from "./FormProgress";
+import PersonalizedJourneyMap from "./PersonalizedJourneyMap";
 import Welcome from "./steps/Welcome";
 import PersonalInfo from "./steps/PersonalInfo";
 import BackgroundCheck from "./steps/BackgroundCheck";
