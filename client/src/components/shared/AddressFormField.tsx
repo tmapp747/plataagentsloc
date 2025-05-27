@@ -27,10 +27,10 @@ const AddressFormField = ({
   required = true,
 }: AddressFormFieldProps) => {
   // State to track selected location names and IDs
-  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(address.region);
-  const [selectedProvince, setSelectedProvince] = useState<string | undefined>(address.province);
-  const [selectedCity, setSelectedCity] = useState<string | undefined>(address.city);
-  const [selectedBarangay, setSelectedBarangay] = useState<string | undefined>(address.barangay);
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(address?.region);
+  const [selectedProvince, setSelectedProvince] = useState<string | undefined>(address?.province);
+  const [selectedCity, setSelectedCity] = useState<string | undefined>(address?.city);
+  const [selectedBarangay, setSelectedBarangay] = useState<string | undefined>(address?.barangay);
   
   const [selectedRegionId, setSelectedRegionId] = useState<number | undefined>();
   const [selectedProvinceId, setSelectedProvinceId] = useState<number | undefined>();
@@ -148,19 +148,21 @@ const AddressFormField = ({
         const region = regions.find((r: any) => r.name === value);
         if (region) {
           setSelectedRegionId(region.id);
+        } else {
+          setSelectedRegionId(undefined);
         }
       }
       
-      // Clear dependent fields
-      updatedAddress.province = undefined;
-      updatedAddress.city = undefined;
-      updatedAddress.barangay = undefined;
+      // Clear dependent fields completely
+      updatedAddress.province = '';
+      updatedAddress.city = '';
+      updatedAddress.barangay = '';
       
-      setSelectedProvince(undefined);
+      setSelectedProvince('');
       setSelectedProvinceId(undefined);
-      setSelectedCity(undefined);
+      setSelectedCity('');
       setSelectedCityId(undefined);
-      setSelectedBarangay(undefined);
+      setSelectedBarangay('');
     } 
     else if (field === 'province') {
       setSelectedProvince(value);
@@ -170,16 +172,18 @@ const AddressFormField = ({
         const province = provinces.find((p: any) => p.name === value);
         if (province) {
           setSelectedProvinceId(province.id);
+        } else {
+          setSelectedProvinceId(undefined);
         }
       }
       
       // Clear dependent fields
-      updatedAddress.city = undefined;
-      updatedAddress.barangay = undefined;
+      updatedAddress.city = '';
+      updatedAddress.barangay = '';
       
-      setSelectedCity(undefined);
+      setSelectedCity('');
       setSelectedCityId(undefined);
-      setSelectedBarangay(undefined);
+      setSelectedBarangay('');
     } 
     else if (field === 'city') {
       setSelectedCity(value);
@@ -189,12 +193,14 @@ const AddressFormField = ({
         const city = cities.find((c: any) => c.name === value);
         if (city) {
           setSelectedCityId(city.id);
+        } else {
+          setSelectedCityId(undefined);
         }
       }
       
       // Clear dependent fields
-      updatedAddress.barangay = undefined;
-      setSelectedBarangay(undefined);
+      updatedAddress.barangay = '';
+      setSelectedBarangay('');
     }
     else if (field === 'barangay') {
       setSelectedBarangay(value);
@@ -212,7 +218,7 @@ const AddressFormField = ({
             <Skeleton className="h-10 w-full mt-1" />
           ) : (
             <Select
-              value={selectedRegion}
+              value={selectedRegion || ''}
               onValueChange={(value) => handleAddressChange('region', value)}
               required={required}
             >
@@ -221,11 +227,17 @@ const AddressFormField = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Array.isArray(regions) && regions.map((region: any) => (
-                    <SelectItem key={region.id} value={region.name}>
-                      {region.name}
+                  {Array.isArray(regions) && regions.length > 0 ? (
+                    regions.map((region: any) => (
+                      <SelectItem key={`region-${region.id}`} value={region.name}>
+                        {region.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      Loading regions...
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -237,9 +249,9 @@ const AddressFormField = ({
             <Skeleton className="h-10 w-full mt-1" />
           ) : (
             <Select
-              value={selectedProvince}
+              value={selectedProvince || ''}
               onValueChange={(value) => handleAddressChange('province', value)}
-              disabled={!selectedRegion}
+              disabled={!selectedRegion || !selectedRegionId}
               required={required}
             >
               <SelectTrigger id="province" className="mt-1">
@@ -247,11 +259,17 @@ const AddressFormField = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Array.isArray(provinces) && provinces.map((province: any) => (
-                    <SelectItem key={province.id} value={province.name}>
-                      {province.name}
+                  {Array.isArray(provinces) && provinces.length > 0 ? (
+                    provinces.map((province: any) => (
+                      <SelectItem key={`province-${province.id}`} value={province.name}>
+                        {province.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      {selectedRegion ? 'No provinces available' : 'Select a region first'}
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -266,9 +284,9 @@ const AddressFormField = ({
             <Skeleton className="h-10 w-full mt-1" />
           ) : (
             <Select
-              value={selectedCity}
+              value={selectedCity || ''}
               onValueChange={(value) => handleAddressChange('city', value)}
-              disabled={!selectedProvince}
+              disabled={!selectedProvince || !selectedProvinceId}
               required={required}
             >
               <SelectTrigger id="city" className="mt-1">
@@ -276,11 +294,17 @@ const AddressFormField = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Array.isArray(cities) && cities.map((city: any) => (
-                    <SelectItem key={city.id} value={city.name}>
-                      {city.name}
+                  {Array.isArray(cities) && cities.length > 0 ? (
+                    cities.map((city: any) => (
+                      <SelectItem key={`city-${city.id}`} value={city.name}>
+                        {city.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      No cities available
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -292,9 +316,9 @@ const AddressFormField = ({
             <Skeleton className="h-10 w-full mt-1" />
           ) : (
             <Select
-              value={selectedBarangay}
+              value={selectedBarangay || ''}
               onValueChange={(value) => handleAddressChange('barangay', value)}
-              disabled={!selectedCity}
+              disabled={!selectedCity || !selectedCityId}
               required={required}
             >
               <SelectTrigger id="barangay" className="mt-1">
@@ -302,11 +326,17 @@ const AddressFormField = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Array.isArray(barangays) && barangays.map((barangay: any) => (
-                    <SelectItem key={barangay.id} value={barangay.name}>
-                      {barangay.name}
+                  {Array.isArray(barangays) && barangays.length > 0 ? (
+                    barangays.map((barangay: any) => (
+                      <SelectItem key={`barangay-${barangay.id}`} value={barangay.name}>
+                        {barangay.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      No barangays available
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectGroup>
               </SelectContent>
             </Select>
