@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { businessInfoSchema } from "@shared/schema";
@@ -72,8 +72,7 @@ const BusinessExperience = ({
   // Generate validation success/error state when values change
   const formState = form.formState;
   
-  useState(() => {
-    // Check if the form is valid whenever the form state changes
+  useEffect(() => {
     const subscription = form.watch(() => {
       if (Object.keys(formState.errors).length === 0 && formState.isDirty) {
         setValidationSuccess(true);
@@ -83,7 +82,7 @@ const BusinessExperience = ({
     });
     
     return () => subscription.unsubscribe();
-  });
+  }, [form, formState.errors, formState.isDirty]);
 
   const onSubmit = (data: BusinessInfoData) => {
     onNext(data);

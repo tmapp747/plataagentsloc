@@ -88,15 +88,14 @@ const ConsolidatedLocationForm = ({
         form.setValue("businessLocation", value.address);
       }
     });
-    
+
     return () => subscription.unsubscribe();
   }, [form]);
 
   // Generate validation success/error state when values change
   const formState = form.formState;
-  
-  useState(() => {
-    // Check if the form is valid whenever the form state changes
+
+  useEffect(() => {
     const subscription = form.watch(() => {
       if (Object.keys(formState.errors).length === 0 && formState.isDirty) {
         setValidationSuccess(true);
@@ -104,16 +103,16 @@ const ConsolidatedLocationForm = ({
         setValidationSuccess(false);
       }
     });
-    
+
     return () => subscription.unsubscribe();
-  });
+  }, [form, formState.errors, formState.isDirty]);
 
   const onSubmit = (data: ConsolidatedLocationData) => {
     // If using home address for business, make sure business location is same as address
     if (data.businessLocationSameAsAddress) {
       data.businessLocation = data.address;
     }
-    
+
     onNext({
       address: data.address,
       businessLocation: data.businessLocation,
@@ -129,7 +128,7 @@ const ConsolidatedLocationForm = ({
 
   const handleHomeAddressChange = (address: Partial<any>) => {
     form.setValue("address", address, { shouldValidate: true });
-    
+
     // If using same address for business, update business location coordinates
     if (form.getValues("businessLocationSameAsAddress")) {
       const businessLocation = {
@@ -149,10 +148,10 @@ const ConsolidatedLocationForm = ({
         latitude: lat,
         longitude: lng,
       };
-      
+
       // Update form value
       form.setValue("address", updatedAddress, { shouldValidate: true });
-      
+
       // If using same address for business, update business location coordinates only
       if (form.getValues("businessLocationSameAsAddress")) {
         const businessLocation = {
@@ -162,7 +161,7 @@ const ConsolidatedLocationForm = ({
         };
         form.setValue("businessLocation", businessLocation, { shouldValidate: true });
       }
-      
+
       // Save the updated coordinates to the backend
       if (applicationId) {
         await onSave({
@@ -191,10 +190,10 @@ const ConsolidatedLocationForm = ({
         // Keep landmark if it exists
         landmark: form.getValues("businessLocation")?.landmark || form.getValues("landmark") || "",
       };
-      
+
       // Update form value
       form.setValue("businessLocation", updatedBusinessLocation, { shouldValidate: true });
-      
+
       // Save the updated coordinates to the backend
       if (applicationId) {
         await onSave({
@@ -215,7 +214,7 @@ const ConsolidatedLocationForm = ({
   const handleSameAddressChange = (checked: boolean) => {
     setUseHomeAddress(checked);
     form.setValue("businessLocationSameAsAddress", checked, { shouldValidate: true });
-    
+
     if (checked) {
       // Just copy coordinates from home address to business location
       const homeAddress = form.getValues("address");
@@ -242,7 +241,7 @@ const ConsolidatedLocationForm = ({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="mb-8">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Home Address</h3>
-            
+
             <FormField
               control={form.control}
               name="address"
@@ -257,7 +256,7 @@ const ConsolidatedLocationForm = ({
                 </FormItem>
               )}
             />
-            
+
             <div className="mt-6">
               <FormField
                 control={form.control}
@@ -276,7 +275,7 @@ const ConsolidatedLocationForm = ({
                 )}
               />
             </div>
-            
+
             <div className="mt-6">
               <FormItem>
                 <FormLabel className="block text-sm font-medium text-gray-700 mb-2">
@@ -299,7 +298,7 @@ const ConsolidatedLocationForm = ({
 
           <div className="border-t border-gray-200 pt-8">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Business Location</h3>
-            
+
             <div className="mb-6">
               <FormField
                 control={form.control}
@@ -327,7 +326,7 @@ const ConsolidatedLocationForm = ({
                 )}
               />
             </div>
-            
+
             {!useHomeAddress && (
               <>
                 <div className="mt-6">
@@ -351,7 +350,7 @@ const ConsolidatedLocationForm = ({
               </>
             )}
           </div>
-          
+
           <FormValidationSummary
             errors={formState.errors}
             success={validationSuccess && formState.isValid}

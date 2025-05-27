@@ -1,62 +1,3 @@
-import { z } from "zod";
-
-// Business Packages (Based on official PlataPay franchise offerings - https://platapay.ph/franchise)
-export const businessPackages = [
-  {
-    id: "silver",
-    name: "Silver Package",
-    description: "Perfect for first-time entrepreneurs in growing communities",
-    monthlyFee: "3500",
-    setupFee: "20000",
-    features: [
-      "Remittance services (domestic & international)",
-      "Bills payment (utilities, loans, etc.)",
-      "E-loading for all networks",
-      "Basic cash-in/cash-out services",
-      "PlataPay POS device",
-      "Initial training program",
-      "Basic marketing materials",
-      "Standard customer support (9am-6pm)"
-    ]
-  },
-  {
-    id: "gold",
-    name: "Gold Package",
-    description: "Ideal for established small businesses in urban locations",
-    monthlyFee: "6000",
-    setupFee: "35000",
-    features: [
-      "All Silver package features",
-      "Insurance product offerings",
-      "Micro-lending services",
-      "Advanced e-wallet integrations",
-      "Enhanced PlataPay signage",
-      "Comprehensive business training",
-      "Expanded marketing toolkit",
-      "Priority customer support (8am-8pm)",
-      "Monthly business review sessions"
-    ]
-  },
-  {
-    id: "platinum",
-    name: "Platinum Package",
-    description: "Premium solution for serious entrepreneurs in prime locations",
-    monthlyFee: "10000",
-    setupFee: "65000",
-    features: [
-      "All Gold package features",
-      "Exclusive territorial rights",
-      "Advanced financial product offerings",
-      "Multiple POS terminals",
-      "Custom store branding package",
-      "Premium commission rates (+2%)",
-      "Executive business development support",
-      "Complete marketing system",
-      "24/7 dedicated support hotline",
-      "Quarterly business strategy sessions"
-    ]
-  }
-];
 
 // Document types required
 export const requiredDocuments = [
@@ -68,7 +9,7 @@ export const requiredDocuments = [
   },
   {
     id: "id_back",
-    name: "ID Back",
+    name: "ID Back", 
     description: "Back side of government-issued ID",
     required: true
   },
@@ -86,9 +27,64 @@ export const requiredDocuments = [
   },
   {
     id: "tax_certificate",
-    name: "Tax Certificate",
+    name: "Tax Certificate", 
     description: "Latest tax certificate or BIR registration",
     required: false
+  }
+];
+
+// Business Packages (simplified - remove complex duplicate definitions)
+export const businessPackages = [
+  {
+    id: "silver",
+    name: "Silver Package",
+    description: "Perfect for first-time entrepreneurs",
+    monthlyFee: "3500",
+    setupFee: "20000",
+    features: [
+      "Remittance services",
+      "Bills payment",
+      "E-loading for all networks", 
+      "Basic cash-in/cash-out services",
+      "PlataPay POS device",
+      "Training program",
+      "Marketing materials",
+      "Customer support (9am-6pm)"
+    ]
+  },
+  {
+    id: "gold", 
+    name: "Gold Package",
+    description: "Ideal for established small businesses",
+    monthlyFee: "6000",
+    setupFee: "35000",
+    features: [
+      "All Silver features",
+      "Insurance products",
+      "Micro-lending services", 
+      "Enhanced e-wallet integrations",
+      "Premium signage",
+      "Business training",
+      "Marketing toolkit",
+      "Priority support (8am-8pm)"
+    ]
+  },
+  {
+    id: "platinum",
+    name: "Platinum Package", 
+    description: "Premium solution for serious entrepreneurs",
+    monthlyFee: "10000",
+    setupFee: "65000",
+    features: [
+      "All Gold features",
+      "Exclusive territorial rights",
+      "Advanced financial products",
+      "Multiple POS terminals",
+      "Custom branding",
+      "Premium commission rates",
+      "Executive support",
+      "24/7 dedicated support"
+    ]
   }
 ];
 

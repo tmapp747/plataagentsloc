@@ -94,7 +94,6 @@ const PersonalInfo = ({
       }
     });
     
-    // Cleanup function
     return () => subscription.unsubscribe();
   }, [form, formState.errors, formState.isDirty]);
 
