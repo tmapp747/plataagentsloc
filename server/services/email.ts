@@ -8,7 +8,7 @@ import { Application } from '@shared/schema';
  */
 
 // Create a transporter - in production, use actual SMTP credentials
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.ethereal.email',
   port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false,
