@@ -606,16 +606,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
-      // Send the email with QR code using SendGrid
-      const success = await sendgridService.sendQRCodeEmail(
-        email,
-        qrCodeImage,
-        resumeUrl
-      );
+      console.log(`Attempting to send QR code email to: ${email}`);
+
+      // In development, use test email service, in production use SendGrid
+      let success = false;
+      
+      if (process.env.NODE_ENV === 'development') {
+        // Use test email service for development
+        success = await testEmailService.sendTestEmail(
+          email,
+          'Your PlataPay Application QR Code',
+          `<p>Resume URL: ${resumeUrl}</p><p>QR Code included as attachment</p>`
+        );
+        console.log('Development: Using test email service');
+      } else {
+        // Use SendGrid for production
+        if (!process.env.SENDGRID_API_KEY) {
+          console.error('SENDGRID_API_KEY not configured for production');
+          return res.status(500).json({ 
+            error: 'Email service not configured' 
+          });
+        }
+        
+        success = await sendgridService.sendQRCodeEmail(
+          email,
+          qrCodeImage,
+          resumeUrl
+        );
+      }
 
       if (success) {
         return res.status(200).json({ 
-          message: 'QR code email sent successfully' 
+          message: 'QR code email sent successfully',
+          development: process.env.NODE_ENV === 'development'
         });
       } else {
         return res.status(500).json({ 
@@ -625,7 +648,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error sending QR code email:', error);
       return res.status(500).json({ 
-        error: 'Internal server error while sending QR code email' 
+        error: 'Internal server error while sending QR code email',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   });
@@ -646,16 +670,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
-      try {
-        // We'll proceed even if we can't find the application in the database
-        // This allows us to send welcome emails for applications that might be in progress
-        let application = null;
+      console.log(`Attempting to send personalized welcome email to: ${email}`);
 
-        // Use a more reliable approach - try catch the whole operation
+      try {
+        // Try to get application from database, but don't fail if not found
+        let application = null;
+        
         try {
           if (applicationId) {
             application = await storage.getApplicationById(applicationId);
-
+            
             // If found, update application with email if needed
             if (application && application.email !== email) {
               await storage.updateApplication(application.id, { email: email });
@@ -663,51 +687,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } catch (error) {
           console.log('Application lookup error (continuing anyway):', error);
-          // Create a minimal application object for the email
-          application = {
-            applicationId: applicationId || "NEW-APP",
-            email: email,
-            ...personalInfo
-          };
         }
 
-        // Generate personalized email content using AI
-        // Combine application data with personal info, if application was found
+        // Create applicant data for email generation
         const applicantData = {
-          ...(application || {}),
+          applicationId: application?.applicationId || applicationId || "NEW-APP",
+          email: email,
           ...personalInfo,
-          applicationId: application?.applicationId || applicationId
+          ...(application || {})
         };
 
         // Generate personalized email content using AI
-        const personalizedContent = await aiEmailAgent.generatePersonalizedEmail(applicantData);
+        let personalizedContent = '';
+        try {
+          personalizedContent = await aiEmailAgent.generatePersonalizedEmail(applicantData);
+        } catch (aiError) {
+          console.error('AI email generation failed, using fallback:', aiError);
+          personalizedContent = `
+            <p>Dear ${personalInfo.firstName || 'Applicant'},</p>
+            <p>Thank you for starting your PlataPay Agent application! We're excited to have you join our growing network of financial service providers.</p>
+            <p>Your application is off to a great start. Please continue with the next steps to complete your registration.</p>
+          `;
+        }
 
-        // Using test email service for development testing
-        // In production, you would use sendgridService instead
-        const success = await testEmailService.sendPersonalizedWelcomeEmail(
-          email,
-          personalizedContent,
-          applicantData.applicationId,
-          qrCodeImage,
-          resumeUrl
-        );
+        // Send email based on environment
+        let success = false;
+        
+        if (process.env.NODE_ENV === 'development') {
+          // Use test email service for development
+          success = await testEmailService.sendPersonalizedWelcomeEmail(
+            email,
+            personalizedContent,
+            applicantData.applicationId,
+            qrCodeImage,
+            resumeUrl
+          );
+          console.log('Development: Using test email service for personalized welcome');
+        } else {
+          // Use SendGrid for production
+          if (!process.env.SENDGRID_API_KEY) {
+            console.error('SENDGRID_API_KEY not configured for production');
+            return res.status(500).json({ 
+              error: 'Email service not configured' 
+            });
+          }
+          
+          success = await sendgridService.sendPersonalizedWelcomeEmail(
+            email,
+            personalizedContent,
+            applicantData.applicationId,
+            qrCodeImage,
+            resumeUrl
+          );
+        }
 
-        // Always return success to the client, even if email sending fails
-        // This ensures the user can continue with their application
         return res.status(200).json({ 
           message: 'Personalized welcome email sent successfully',
-          success: success
+          success: success,
+          development: process.env.NODE_ENV === 'development'
         });
-      } catch (dbError) {
-        console.error('Database error while sending personalized email:', dbError);
+        
+      } catch (processingError) {
+        console.error('Error processing personalized email:', processingError);
         return res.status(500).json({ 
-          error: 'Failed to process application data for personalized email' 
+          error: 'Failed to process personalized email',
+          details: process.env.NODE_ENV === 'development' ? processingError.message : undefined
         });
       }
     } catch (error) {
       console.error('Error sending personalized welcome email:', error);
       return res.status(500).json({ 
-        error: 'Internal server error while sending personalized welcome email' 
+        error: 'Internal server error while sending personalized welcome email',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   });
@@ -884,44 +935,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Send QR code email
-  app.post('/api/send-qr-email', async (req, res) => {
-    const { email, qrCodeImage, resumeUrl } = req.body;
-
-    if (!email || !qrCodeImage || !resumeUrl) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    try {
-      console.log(`Sending QR code email to: ${email}`);
-
-      // Make sure we're using the correct email service
-      // In development, use the test email service
-      if (process.env.NODE_ENV === 'development') {
-        const testEmailResult = await testEmailService.sendTestEmail(
-          email, 
-          'Your PlataPay Application QR Code', 
-          `<p>Resume URL: ${resumeUrl}</p><p>QR Code included as attachment</p>`
-        );
-        return res.json({ success: true, info: 'Test email service used in development' });
-      } else {
-        // In production, use the regular email service
-        const result = await emailService.sendQRCodeEmail(email, qrCodeImage, resumeUrl);
-
-        if (result) {
-          return res.json({ success: true });
-        } else {
-          return res.status(500).json({ error: 'Failed to send email' });
-        }
-      }
-    } catch (error) {
-      console.error('Error sending QR code email:', error);
-      return res.status(500).json({ 
-        error: 'Internal server error', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
+  
 
   const httpServer = createServer(app);
   return httpServer;

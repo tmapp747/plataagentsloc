@@ -8,10 +8,11 @@ import { Application } from '@shared/schema';
 
 if (!process.env.SENDGRID_API_KEY) {
   console.warn("SENDGRID_API_KEY environment variable is not set! Emails may not be sent properly.");
+  console.warn("For production deployment, make sure to set SENDGRID_API_KEY in your environment variables.");
 }
 
 // Initialize SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || 'DUMMY_KEY_FOR_DEV');
 
 // Email templates for different application statuses
 const emailTemplates = {
@@ -168,6 +169,12 @@ export async function sendWelcomeEmail(email: string, applicationId: string, res
  * @param resumeUrl URL to resume application
  */
 export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resumeUrl: string): Promise<boolean> {
+  // Check if SendGrid is properly configured
+  if (!process.env.SENDGRID_API_KEY || process.env.SENDGRID_API_KEY === 'DUMMY_KEY_FOR_DEV') {
+    console.warn('SendGrid not configured, email sending skipped');
+    return false;
+  }
+
   try {
     // Extract application ID from resume URL if possible
     const applicationId = resumeUrl.split('/resume/')[1] || 'your application';
@@ -178,7 +185,7 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
       content = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
     }
     
-    await sgMail.send({
+    const emailData = {
       from: 'agent-services@platapay.ph',
       to: email,
       subject: 'Your PlataPay Application QR Code',
@@ -214,15 +221,20 @@ export async function sendQRCodeEmail(email: string, qrCodeDataUrl: string, resu
           content: content,
           type: 'image/png', 
           disposition: 'inline',
-          contentId: 'qr-code-image' // Content ID for embedding in the email
+          contentId: 'qr-code-image'
         }
       ]
-    });
+    };
     
-    console.log(`QR code email sent to: ${email}`);
+    console.log(`Attempting to send QR code email to: ${email} via SendGrid`);
+    const response = await sgMail.send(emailData);
+    console.log(`QR code email sent successfully to: ${email}`, response[0].statusCode);
     return true;
   } catch (error) {
     console.error(`Failed to send QR code email to: ${email}`, error);
+    if (error.response) {
+      console.error('SendGrid error response:', error.response.body);
+    }
     return false;
   }
 }
