@@ -47,8 +47,8 @@ const BusinessPackages = ({
   // Set default values from the application data if available
   const defaultValues: Partial<PackageSelectionData> = {
     packageType: application?.packageType || "",
-    monthlyFee: application?.monthlyFee ? Number(application.monthlyFee) : undefined,
-    setupFee: application?.setupFee ? Number(application.setupFee) : undefined,
+    monthlyFee: application?.monthlyFee || "",
+    setupFee: application?.setupFee || "",
   };
 
   const form = useForm<PackageSelectionData>({

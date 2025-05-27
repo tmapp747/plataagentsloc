@@ -68,8 +68,8 @@ export const agentApplications = pgTable("agent_applications", {
   
   // Selected Package
   packageType: text("package_type"),
-  monthlyFee: numeric("monthly_fee"),
-  setupFee: numeric("setup_fee"),
+  monthlyFee: text("monthly_fee"),
+  setupFee: text("setup_fee"),
   
   // Documents
   documentIds: text("document_ids").array(),
@@ -283,8 +283,8 @@ export const businessInfoSchema = z.object({
 
 export const packageSelectionSchema = z.object({
   packageType: z.string().min(1, "Package selection is required"),
-  monthlyFee: z.number(),
-  setupFee: z.number(),
+  monthlyFee: z.string(),
+  setupFee: z.string(),
 });
 
 export const agreementSchema = z.object({

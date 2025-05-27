@@ -6,8 +6,8 @@ export const businessPackages = [
     id: "silver",
     name: "Silver Package",
     description: "Perfect for first-time entrepreneurs in growing communities",
-    monthlyFee: 3500,
-    setupFee: 20000,
+    monthlyFee: "3500",
+    setupFee: "20000",
     features: [
       "Remittance services (domestic & international)",
       "Bills payment (utilities, loans, etc.)",
@@ -23,8 +23,8 @@ export const businessPackages = [
     id: "gold",
     name: "Gold Package",
     description: "Ideal for established small businesses in urban locations",
-    monthlyFee: 6000,
-    setupFee: 35000,
+    monthlyFee: "6000",
+    setupFee: "35000",
     features: [
       "All Silver package features",
       "Insurance product offerings",
@@ -41,8 +41,8 @@ export const businessPackages = [
     id: "platinum",
     name: "Platinum Package",
     description: "Premium solution for serious entrepreneurs in prime locations",
-    monthlyFee: 10000,
-    setupFee: 65000,
+    monthlyFee: "10000",
+    setupFee: "65000",
     features: [
       "All Gold package features",
       "Exclusive territorial rights",
