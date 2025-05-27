@@ -29,7 +29,6 @@ import { locationService } from "./services/locationService";
 import { validationService } from "./services/validationService";
 import { aiEmailAgent } from "./services/aiEmailAgent";
 import * as testEmailService from "./services/testEmailService";
-import { personalizedVideoService } from "./services/personalizedVideo";
 
 // Set up multer for file uploads
 const upload = multer({
