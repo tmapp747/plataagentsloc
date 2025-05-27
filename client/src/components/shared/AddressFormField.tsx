@@ -118,11 +118,11 @@ const AddressFormField = ({
 
   // Fetch barangays based on selected city ID
   const { data: barangays, isLoading: barangaysLoading } = useQuery({
-    queryKey: ['/api/barangays', { cityId: selectedCityId }],
+    queryKey: ['/api/barangays', selectedCityId],
     enabled: !!selectedCityId,
-    queryFn: async ({ queryKey }) => {
-      const [_path, params] = queryKey;
-      const response = await fetch(`/api/barangays?cityId=${params.cityId}`);
+    queryFn: async () => {
+      console.log('Fetching barangays for city ID:', selectedCityId);
+      const response = await fetch(`/api/barangays?cityId=${selectedCityId}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
