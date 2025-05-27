@@ -147,10 +147,10 @@ const BusinessPackages = ({
                             </CardHeader>
                             <CardContent className="pt-4">
                               <div className="text-2xl font-bold text-primary mb-3">
-                                {formatCurrency(pkg.monthlyFee)}<span className="text-sm font-normal text-gray-500">/month</span>
+                                {formatCurrency(parseInt(pkg.monthlyFee))}<span className="text-sm font-normal text-gray-500">/month</span>
                               </div>
                               <div className="text-sm text-gray-600 mb-4">
-                                Setup fee: {formatCurrency(pkg.setupFee)}
+                                Setup fee: {formatCurrency(parseInt(pkg.setupFee))}
                               </div>
                               <ul className="space-y-2">
                                 {pkg.features.map((feature, idx) => (

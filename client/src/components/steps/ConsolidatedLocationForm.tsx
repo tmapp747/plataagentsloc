@@ -56,8 +56,19 @@ const ConsolidatedLocationForm = ({
 
   // Set default values from the application data if available
   const defaultValues: Partial<ConsolidatedLocationData> = {
-    address: application?.address || {},
-    businessLocation: application?.businessLocation || {},
+    address: application?.address || {
+      region: "",
+      province: "",
+      city: "",
+      barangay: "",
+      streetAddress: "",
+      landmark: "",
+    },
+    businessLocation: application?.businessLocation || {
+      latitude: undefined,
+      longitude: undefined,
+      landmark: "",
+    },
     businessLocationSameAsAddress: application?.businessLocationSameAsAddress || false,
     landmark: application?.landmark || "",
   };
