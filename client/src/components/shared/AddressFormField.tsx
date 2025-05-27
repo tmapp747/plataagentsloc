@@ -234,7 +234,7 @@ const AddressFormField = ({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="loading" disabled>
                       Loading regions...
                     </SelectItem>
                   )}
@@ -266,7 +266,7 @@ const AddressFormField = ({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="no-provinces" disabled>
                       {selectedRegion ? 'No provinces available' : 'Select a region first'}
                     </SelectItem>
                   )}
@@ -301,7 +301,7 @@ const AddressFormField = ({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="no-cities" disabled>
                       No cities available
                     </SelectItem>
                   )}
@@ -333,7 +333,7 @@ const AddressFormField = ({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="no-barangays" disabled>
                       No barangays available
                     </SelectItem>
                   )}
