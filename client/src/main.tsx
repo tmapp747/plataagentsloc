@@ -9,6 +9,7 @@ import NotFound from "./pages/not-found";
 import EmbedForm from "./pages/EmbedForm";
 import AdminPanel from "./pages/AdminPanel";
 import FormTester from "./pages/FormTester";
+import VideoDemo from "./pages/VideoDemo";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: "test",
         element: <FormTester />,
+      },
+      {
+        path: "video-demo",
+        element: <VideoDemo />,
       },
     ],
   },

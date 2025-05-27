@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { useCreateApplication } from "@/hooks/useApplication";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,8 @@ import {
   Mail,
   Phone,
   Clock3,
-  MapPin
+  MapPin,
+  Video
 } from "lucide-react";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -107,6 +108,16 @@ const Home = () => {
                 buttonSize="lg"
                 buttonClassName="bg-white hover:bg-gray-50 text-primary border-primary/20 font-medium py-6 px-8 rounded-md shadow-lg"
               />
+            </div>
+            
+            {/* Video Demo Link */}
+            <div className="mt-6">
+              <Link href="/video-demo">
+                <Button variant="link" className="text-primary/80 hover:text-primary">
+                  <Video className="w-4 h-4 mr-2" />
+                  See Personalized Welcome Videos Demo
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
