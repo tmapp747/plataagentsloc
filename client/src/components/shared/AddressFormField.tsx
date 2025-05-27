@@ -231,12 +231,12 @@ const AddressFormField = ({
                 <SelectGroup>
                   {Array.isArray(regions) && regions.length > 0 ? (
                     regions.map((region: any) => (
-                      <SelectItem key={`region-${region.id}`} value={region.name}>
+                      <SelectItem key={`region-${region.id}`} value={region.name || `region-${region.id}`}>
                         {region.name}
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="loading" disabled>
+                    <SelectItem value="loading-regions" disabled>
                       Loading regions...
                     </SelectItem>
                   )}
@@ -263,12 +263,12 @@ const AddressFormField = ({
                 <SelectGroup>
                   {Array.isArray(provinces) && provinces.length > 0 ? (
                     provinces.map((province: any) => (
-                      <SelectItem key={`province-${province.id}`} value={province.name}>
+                      <SelectItem key={`province-${province.id}`} value={province.name || `province-${province.id}`}>
                         {province.name}
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="no-provinces" disabled>
+                    <SelectItem value="no-provinces-available" disabled>
                       {selectedRegion ? 'No provinces available' : 'Select a region first'}
                     </SelectItem>
                   )}
@@ -298,12 +298,12 @@ const AddressFormField = ({
                 <SelectGroup>
                   {Array.isArray(cities) && cities.length > 0 ? (
                     cities.map((city: any) => (
-                      <SelectItem key={`city-${city.id}`} value={city.name}>
+                      <SelectItem key={`city-${city.id}`} value={city.name || `city-${city.id}`}>
                         {city.name}
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="no-cities" disabled>
+                    <SelectItem value="no-cities-available" disabled>
                       No cities available
                     </SelectItem>
                   )}
@@ -330,12 +330,12 @@ const AddressFormField = ({
                 <SelectGroup>
                   {Array.isArray(barangays) && barangays.length > 0 ? (
                     barangays.map((barangay: any) => (
-                      <SelectItem key={`barangay-${barangay.id}`} value={barangay.name}>
+                      <SelectItem key={`barangay-${barangay.id}`} value={barangay.name || `barangay-${barangay.id}`}>
                         {barangay.name}
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="no-barangays" disabled>
+                    <SelectItem value="no-barangays-available" disabled>
                       No barangays available
                     </SelectItem>
                   )}
