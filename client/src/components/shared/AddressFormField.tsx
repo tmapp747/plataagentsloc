@@ -154,15 +154,15 @@ const AddressFormField = ({
       }
       
       // Clear dependent fields completely
-      updatedAddress.province = '';
-      updatedAddress.city = '';
-      updatedAddress.barangay = '';
+      updatedAddress.province = undefined;
+      updatedAddress.city = undefined;
+      updatedAddress.barangay = undefined;
       
-      setSelectedProvince('');
+      setSelectedProvince(undefined);
       setSelectedProvinceId(undefined);
-      setSelectedCity('');
+      setSelectedCity(undefined);
       setSelectedCityId(undefined);
-      setSelectedBarangay('');
+      setSelectedBarangay(undefined);
     } 
     else if (field === 'province') {
       setSelectedProvince(value);
@@ -178,12 +178,12 @@ const AddressFormField = ({
       }
       
       // Clear dependent fields
-      updatedAddress.city = '';
-      updatedAddress.barangay = '';
+      updatedAddress.city = undefined;
+      updatedAddress.barangay = undefined;
       
-      setSelectedCity('');
+      setSelectedCity(undefined);
       setSelectedCityId(undefined);
-      setSelectedBarangay('');
+      setSelectedBarangay(undefined);
     } 
     else if (field === 'city') {
       setSelectedCity(value);
@@ -199,8 +199,8 @@ const AddressFormField = ({
       }
       
       // Clear dependent fields
-      updatedAddress.barangay = '';
-      setSelectedBarangay('');
+      updatedAddress.barangay = undefined;
+      setSelectedBarangay(undefined);
     }
     else if (field === 'barangay') {
       setSelectedBarangay(value);
