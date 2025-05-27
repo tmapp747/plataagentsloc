@@ -110,15 +110,7 @@ const Home = () => {
               />
             </div>
             
-            {/* Video Demo Link */}
-            <div className="mt-6">
-              <Link href="/video-demo">
-                <Button variant="link" className="text-primary/80 hover:text-primary">
-                  <Video className="w-4 h-4 mr-2" />
-                  See Personalized Welcome Videos Demo
-                </Button>
-              </Link>
-            </div>
+
           </div>
         </div>
       </div>
