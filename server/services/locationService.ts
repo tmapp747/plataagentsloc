@@ -138,7 +138,7 @@ class LocationService {
       
       // Transform data to match our schema
       const provinces: Province[] = provincesData.map((province: any, index: number) => ({
-        id: index + 1,
+        id: province.id || (regionId * 1000 + index + 1), // Use original ID or generate unique one
         regionId: regionId,
         code: province.code,
         name: province.name
@@ -231,7 +231,7 @@ class LocationService {
       
       // Transform data to match our schema
       const cities: City[] = citiesData.map((city: any, index: number) => ({
-        id: index + 1,
+        id: city.id || (provinceId * 1000 + index + 1), // Use original ID or generate unique one
         provinceId: provinceId,
         code: city.code,
         name: city.name
@@ -296,7 +296,7 @@ class LocationService {
       
       // Transform data to match our schema
       const barangays: Barangay[] = barangaysData.map((barangay: any, index: number) => ({
-        id: index + 1,
+        id: barangay.id || (cityId * 1000 + index + 1), // Use original ID or generate unique one
         cityId: cityId,
         code: barangay.code,
         name: barangay.name
