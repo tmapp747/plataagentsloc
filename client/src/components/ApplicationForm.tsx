@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -40,6 +40,34 @@ const ApplicationForm = () => {
     queryKey: [`/api/applications/${applicationId}`],
     refetchOnWindowFocus: false,
   });
+
+  // Function to determine the appropriate step based on application progress
+  const determineCurrentStep = (app: Application): number => {
+    if (!app) return 0;
+    
+    // If application is already submitted, go to confirmation
+    if (app.status === 'submitted') return 9;
+    
+    // Check completed fields to determine next step
+    if (!app.firstName || !app.lastName || !app.email) return 1; // Personal Info
+    if (!app.hasCriminalRecord === undefined || !app.hasBusinessExperience === undefined) return 2; // Background
+    if (!app.businessType || !app.yearsOfExperience === undefined) return 3; // Business Experience
+    if (!app.address?.region || !app.address?.province || !app.address?.city) return 4; // Location
+    if (!app.packageType) return 5; // Packages
+    if (!app.documentsUploaded) return 6; // Documents
+    if (!app.signatureUrl || !app.termsAccepted) return 7; // Signature
+    if (app.status === 'draft') return 8; // Review
+    
+    return 0; // Default to Welcome
+  };
+
+  // Update current step when application data loads
+  useEffect(() => {
+    if (application) {
+      const appropriateStep = determineCurrentStep(application);
+      setCurrentStep(appropriateStep);
+    }
+  }, [application]);
 
   const updateApplicationMutation = useMutation({
     mutationFn: async ({ step, data }: { step: number; data: any }) => {
