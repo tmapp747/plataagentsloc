@@ -51,6 +51,9 @@ const AddressFormField = ({
         const region = regions.find((r: any) => r.name === address.region);
         if (region) {
           setSelectedRegionId(region.id);
+          console.log('Found region:', region.name, 'with ID:', region.id);
+        } else {
+          console.log('Region not found:', address.region, 'in regions:', regions.map(r => r.name));
         }
       }
     }
@@ -58,11 +61,10 @@ const AddressFormField = ({
 
   // Fetch provinces based on selected region ID
   const { data: provinces, isLoading: provincesLoading } = useQuery({
-    queryKey: ['/api/provinces', { regionId: selectedRegionId }],
+    queryKey: ['/api/provinces', selectedRegionId],
     enabled: !!selectedRegionId,
-    queryFn: async ({ queryKey }) => {
-      const [_path, params] = queryKey;
-      const response = await fetch(`/api/provinces?regionId=${params.regionId}`);
+    queryFn: async () => {
+      const response = await fetch(`/api/provinces?regionId=${selectedRegionId}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -87,11 +89,11 @@ const AddressFormField = ({
 
   // Fetch cities based on selected province ID
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ['/api/cities', { provinceId: selectedProvinceId }],
+    queryKey: ['/api/cities', selectedProvinceId],
     enabled: !!selectedProvinceId,
-    queryFn: async ({ queryKey }) => {
-      const [_path, params] = queryKey;
-      const response = await fetch(`/api/cities?provinceId=${params.provinceId}`);
+    queryFn: async () => {
+      console.log('Fetching cities for province ID:', selectedProvinceId);
+      const response = await fetch(`/api/cities?provinceId=${selectedProvinceId}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
